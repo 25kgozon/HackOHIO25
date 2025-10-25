@@ -1,0 +1,36 @@
+  ~/Documents/hack/event-vite                                             Size        Type         Last Modified  
+    backend                                                                  -   directory   2025-10-24 02:23 PM  
+   │  __pycache__                                                            -   directory   2025-10-24 02:13 PM  
+   │  db.py                                                            3.95 KB          py   2025-10-24 02:13 PM  
+   │ 󰈙 requirements.txt                                                    31 B         txt   2025-10-22 05:50 PM  
+   │  runner.py                                                  E     1.62 KB          py   2025-10-24 02:19 PM  
+   └  serve.py                                                           687 B          py   2025-10-24 02:23 PM  
+    vite-ui                                                                  -   directory   2025-10-22 05:12 PM  
+   │  dist                                                                   -   directory   2025-10-22 05:12 PM  
+   │ │  assets                                                               -   directory   2025-10-22 05:12 PM  
+   │ │  index.html                                                       454 B        html   2025-10-22 05:12 PM  
+   │ └ 󰜡 vite.svg                                                       1.46 KB         svg   2025-10-22 05:12 PM  
+   │  node_modules                                                           -   directory   2025-10-22 05:12 PM  
+   │  public                                                                 -   directory   2025-10-22 04:59 PM  
+   │  src                                                                    -   directory   2025-10-24 02:27 PM  
+   │ │  assets                                                               -   directory   2025-10-22 04:59 PM  
+   │ │  App.css                                                          606 B         css   2025-10-22 04:59 PM  
+   │ │  App.tsx                                                  E       828 B         tsx   2025-10-24 02:27 PM  
+   │ │  index.css                                                      1.13 KB         css   2025-10-22 04:59 PM  
+   │ └  main.tsx                                                         230 B         tsx   2025-10-22 04:59 PM  
+   │ 󰂺 README.md                                                         2.5 KB          md   2025-10-22 04:59 PM  
+   │  eslint.config.js                                                   621 B          js   2025-10-22 04:59 PM  
+   │  index.html                                                         356 B        html   2025-10-22 04:59 PM  
+   │  package-lock.json                                              115.24 KB        json   2025-10-22 04:59 PM  
+   │  package.json                                                       708 B        json   2025-10-22 04:59 PM  
+   │  tsconfig.app.json                                                  732 B        json   2025-10-22 04:59 PM  
+   │  tsconfig.json                                                      119 B        json   2025-10-22 04:59 PM  
+   │  tsconfig.node.json                                                 653 B        json   2025-10-22 04:59 PM  
+   └  vite.config.ts                                                     316 B          ts   2025-10-22 05:08 PM  
+     (1 hidden item)
+   * Dockerfile.backend                                                   254 B     backend   2025-10-22 05:39 PM  
+   * Dockerfile.frontend                                                  271 B    frontend   2025-10-22 05:39 PM  
+    dev.sh                                                               232 B          sh   2025-10-24 01:06 PM  
+   󰡨 docker-compose.yml                                                   849 B         yml   2025-10-22 05:49 PM  
+    nginx.conf                                                           325 B        conf   2025-10-22 05:40 PM  
+    prod.sh                                                               77 B          sh   2025-10-22 05:45 PM  

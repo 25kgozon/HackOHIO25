@@ -38,3 +38,28 @@
 .assignment-card.graded {
     border-left: 5px solid var(--fuchsia-400);
 }
+
+.upload-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+.upload-section .btn {
+    width: 200px;
+}
+
+.pdf-preview {
+    border: 1px solid var(--glass-brd);
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-top: 1rem;
+    max-width: 800px;
+    overflow: auto;
+}
+
+.pdf-preview canvas {
+    width: 100% !important;
+    height: auto !important;
+}

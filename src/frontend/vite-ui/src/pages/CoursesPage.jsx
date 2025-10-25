@@ -33,7 +33,12 @@ const CoursesPage = () => {
                             className="course-card"
                             style={{ borderLeft: `5px solid ${course.color}` }}
                             onClick={() =>
-                                navigate(`/course/${course.id}`, { state: { courseTitle: course.title } })
+                                navigate(`/course/${course.id}`, {
+                                    state: {
+                                        courseTitle: course.title,
+                                        isTeacher: false
+                                    }
+                                })
                             }
                         >
                             <h3>{course.title}</h3>

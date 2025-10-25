@@ -11,21 +11,21 @@ import AssignmentPage from './pages/AssignmentPage.jsx';
 import SubmissionsPage from './pages/SubmissionsPage.jsx';
 
 // --- Context ---//
-import { AssignmentsProvider } from './context/AssignmentsContext';
+import { UserProvider } from './context/UserContext.jsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AssignmentsProvider>
+    <UserProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<MainPage />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/main-page" element={<MainPage />} />
+          <Route path="/" element={<LoginPage />} />
           <Route path="/courses" element={<CoursesPage />} />
           <Route path="/course/:id" element={<CourseInfoPage />} />
           <Route path="/course/:id/assignment/:assignmentTitle" element={<AssignmentPage />} />
           <Route path="/submissions" element={<SubmissionsPage />} />
         </Routes>
       </Router>
-    </AssignmentsProvider>
+    </UserProvider>
   </StrictMode>
 );

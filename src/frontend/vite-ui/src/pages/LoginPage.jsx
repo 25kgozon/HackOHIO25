@@ -1,75 +1,53 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import CoursesPage from "../pages/CoursesPage"; 
+import { useUser } from "../context/UserContext";
 import "../styles/LoginPage.css";
 
-const App = () => {
-  const [user, setUser] = useState(null);
+const LoginPage = () => {
+  const navigate = useNavigate();
+  const { user, login } = useUser();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-  // Function to fetch current logged-in user
-  const fetchUser = async () => {
-    try {
-      const res = await fetch("/api/user", { credentials: "include" });
-      if (!res.ok) {
-        setUser(null);
-        return;
-      }
-      const data = await res.json();
-      setUser(data.user);
-    } catch (err) {
-      console.error("Error fetching user:", err);
-      setUser(null);
-    }
+  const handleLogin = (role) => {
+    // Simulate Google login + role selection
+    login("Sample User", role);
+    navigate("/main-page");
   };
 
-  // Fetch user on initial load
-  useEffect(() => {
-    fetchUser();
-  }, []);
-
-  // Login and logout actions
-  const handleLogout = async () => {
-    await fetch("/api/logout", { credentials: "include" });
-    setUser(null);
-  };
-
-  if (!user) {
-    // Show login page if not logged in
-    return (
-      <div className="login-page">
+  return (
+    <div className="login-page">
+      {/* Only show menu if user exists */}
+      {user && (
         <button className="menu-btn" onClick={toggleSidebar}>
           ☰
         </button>
-        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-        <div className="login-card card fade-in">
-          <h1 className="iridescent">Login</h1>
-          <a
-            href="/api/login" // backend login route
-            className="btn"
-          >
-            Login with Google
-          </a>
-          <p className="login-footer">
-            Don't have an account? <a href="#">Sign up</a>
-          </p>
-        </div>
-      </div>
-    );
-  }
+      )}
 
-  // Show dashboard if logged in
-  return (
-    <div>
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      <button className="btn logout-btn" onClick={handleLogout}>
-        Logout
-      </button>
-      <CoursePage user={user} />
+
+      <div className="login-card card fade-in">
+        <h1 className="iridescent">Login</h1>
+
+        {!user ? (
+          <div className="login-buttons">
+            <button className="btn" onClick={() => handleLogin("teacher")}>
+              Login as Teacher
+            </button>
+            <button className="btn" onClick={() => handleLogin("student")}>
+              Login as Student
+            </button>
+          </div>
+        ) : (
+          <p className="login-footer">
+            Logged in as <strong>{user.role}</strong>
+          </p>
+        )}
+      </div>
     </div>
   );
 };
 
-export default App;
+export default LoginPage;

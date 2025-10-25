@@ -10,14 +10,113 @@ class EventStatus(enum.Enum):
     RUNNING = 1
     COMPLETE = 2
 
+class UserRole(enum.Enum):
+    # Must be a class(es)
+    # Only can interact with existing post(s)
+    STUDENT = 1
+
+    # Can own and create class(es)
+    # Can create post(s)
+    TEACHER = 2
+
+    # Exists for debugging
+    # What does that mean, TODO!
+    ADMIN = 3
+
+class FileRole(enum.Enum):
+    # Contains no answers
+    STUDENT_COPY = 1
+
+    # Contains students answers
+    STUDENT_RESPONSE = 2
+
+    TEACHER_KEY = 3
+    TEACHER_CONTEXT = 4
+
+class TaskType(enum.Enum):
+    SINGLE_PDF = 1
+
+    MANY_TEXT = 2
+
+
 
 SCHEMA = """
-CREATE TABLE IF NOT EXISTS events (
-    id SERIAL PRIMARY KEY,
-    event_status INT,
-    event_payload TEXT,
-    event_result TEXT
+CREATE TABLE IF NOT EXISTS users (
+    openid VARCHAR(254) PRIMARY KEY,
+    
+    email TEXT, 
+    role INT, -- UserRole
+    
+    classes UUID[]
 );
+
+CREATE TABLE IF NOT EXISTS classes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT,
+    desc TEXT,
+
+    assignments UUID[]
+    
+    -- Todo
+);
+
+
+CREATE TABLE IF NOT EXISTS assignments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    
+    name TEXT,
+    desc TEXT,
+
+    -- Json dict TODO
+    attrs TEXT,
+
+    context TEXT,
+
+
+    files UUID[]
+);
+
+
+-- All files that are in the site
+CREATE TABLE IF NOT EXISTS files (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    posted_user UUID,
+    file_role INT, -- FileRole
+
+    context TEXT,
+);
+
+
+CREATE TABLE IF NOT EXISTS file_cache (
+    -- Same as key in `files`
+    id UUID PRIMARY KEY,
+
+    results TEXT
+);
+
+
+
+CREATE TABLE IF NOT EXISTS file_task (
+    id SERIAL PRIMARY KEY,
+
+    -- TaskType
+    task_type INT,
+
+    files UUID[],
+
+
+
+
+
+
+
+
+);
+
+
+
+
 """
 
 

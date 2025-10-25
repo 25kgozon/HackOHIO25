@@ -62,7 +62,7 @@ def main():
     print("🚀 Starting event runner")
 
     with ThreadPoolExecutor(max_workers=WORKERS) as exec:
-        while True:
+        #while True:
             doSleep = True
 
             # Check completed jobs
@@ -80,6 +80,7 @@ def main():
             running = [fut for fut in running if not fut[1].done()]
 
             # Dequeue new jobs if there is capacity
+
             if WORKERS > len(running):
                 event = db.dequeue_event()
                 if event:

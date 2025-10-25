@@ -1,6 +1,7 @@
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+import db
 
 class AIGrader:
     def __init__(self):

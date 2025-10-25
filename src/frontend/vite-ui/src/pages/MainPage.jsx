@@ -1,10 +1,40 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/MainPage.css";
 import Sidebar from "../components/Sidebar";
 
+// Sample courses data
+const sampleCourses = [
+    {
+        id: 1,
+        title: "Calculus 101",
+        upcoming: [
+            { title: "Homework 3", due: "Oct 30" },
+            { title: "Quiz 2", due: "Nov 2" },
+        ],
+    },
+    {
+        id: 2,
+        title: "Physics 201",
+        upcoming: [
+            { title: "Lab Report 1", due: "Oct 29" },
+            { title: "Midterm Prep", due: "Nov 5" },
+        ],
+    },
+    {
+        id: 3,
+        title: "Computer Science 101",
+        upcoming: [
+            { title: "Project Proposal", due: "Nov 3" },
+            { title: "Homework 2", due: "Nov 7" },
+        ],
+    },
+];
+
 const MainPage = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [activeSection, setActiveSection] = useState("Dashboard"); // Track current section
+    const [activeSection, setActiveSection] = useState("Dashboard"); // Track section
+    const navigate = useNavigate();
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -17,10 +47,8 @@ const MainPage = () => {
         <div className="main-page">
             {/* Header */}
             <header className="main-header">
-                <button className="menu-btn" onClick={toggleSidebar}>
-                    ☰
-                </button>
-                <h1 className="title-text"> GrAIscope | Dashboard</h1>
+                <button className="menu-btn" onClick={toggleSidebar}>☰</button>
+                <h1 className="title-text">GrAIscope | {activeSection}</h1>
             </header>
 
             {/* Sidebar */}
@@ -32,48 +60,37 @@ const MainPage = () => {
 
             {/* Main Content */}
             <main className="main-content fade-in">
-                <h1 className="page-title">{activeSection}</h1>
+                <h2 className="page-title">{activeSection}</h2>
 
-                {/* Placeholder Sections */}
                 {activeSection === "Dashboard" && (
-                    <div className="placeholder-section dashboard">
-                        <p>📊 View recent grading stats, activity logs, and submissions at a glance.</p>
+                    <div className="dashboard-section">
+                        {sampleCourses.map((course) => (
+                            <div key={course.id} className="course-section">
+                                <h3 className="course-title">{course.title}</h3>
+                                <div className="assignment-cards">
+                                    {course.upcoming.map((a, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="assignment-card upcoming"
+                                            onClick={() =>
+                                                navigate(`/course/${course.id}/assignment/${a.title}`, {
+                                                    state: { courseTitle: course.title, assignmentDetails: a },
+                                                })
+                                            }
+                                        >
+                                            <strong>{a.title}</strong>
+                                            <p>Due: {a.due}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 )}
 
-                {activeSection === "Courses" && (
-                    <div className="placeholder-section courses">
-                        <p>📚 Placeholder for your enrolled courses and instructor dashboards.</p>
-                    </div>
-                )}
-
-                {activeSection === "Assignments" && (
-                    <div className="placeholder-section assignments">
-                        <p>📝 Placeholder for assignment creation, upload, and grading status.</p>
-                    </div>
-                )}
-
-                {activeSection === "Submissions" && (
-                    <div className="placeholder-section submissions">
-                        <p>📤 Placeholder for viewing or uploading student submissions.</p>
-                    </div>
-                )}
-
-                {activeSection === "Grades" && (
-                    <div className="placeholder-section grades">
-                        <p>🏅 Placeholder for viewing grades, AI feedback, and performance summaries.</p>
-                    </div>
-                )}
-
-                {activeSection === "Settings" && (
-                    <div className="placeholder-section settings">
-                        <p>⚙️ Placeholder for system and account configuration.</p>
-                    </div>
-                )}
-
-                {activeSection === "Login / Profile" && (
-                    <div className="placeholder-section profile">
-                        <p>👤 Placeholder for user login, registration, and profile management.</p>
+                {activeSection !== "Upcoming Assignments" && (
+                    <div className={`placeholder-section ${activeSection.toLowerCase()}`}>
+                        <p>📚 Placeholder content for {activeSection}.</p>
                     </div>
                 )}
             </main>

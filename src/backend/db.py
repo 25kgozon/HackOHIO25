@@ -108,6 +108,7 @@ class DB:
             "DATABASE_URL",
             "postgres://appuser:apppass@localhost:5432/appdb",
         )
+        print(db_url)
 
         parsed = urlparse(db_url)
         user = parsed.username
@@ -115,6 +116,8 @@ class DB:
         host = parsed.hostname
         port = parsed.port
         database = parsed.path.lstrip("/")
+
+        print(password)
 
         self.pool = psycopg2.pool.SimpleConnectionPool(
             2,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
-import CoursesPage from "../pages/CoursesPage"; // your dashboard
+import CoursesPage from "../pages/CoursesPage"; 
 import "../styles/LoginPage.css";
 
 const App = () => {

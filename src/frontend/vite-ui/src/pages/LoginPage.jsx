@@ -12,7 +12,7 @@ const App = () => {
   // Function to fetch current logged-in user
   const fetchUser = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8020/api/user", { credentials: "include" });
+      const res = await fetch("/api/user", { credentials: "include" });
       if (!res.ok) {
         setUser(null);
         return;
@@ -32,7 +32,7 @@ const App = () => {
 
   // Login and logout actions
   const handleLogout = async () => {
-    await fetch("http://127.0.0.1:8020/api/logout", { credentials: "include" });
+    await fetch("/api/logout", { credentials: "include" });
     setUser(null);
   };
 
@@ -47,7 +47,7 @@ const App = () => {
         <div className="login-card card fade-in">
           <h1 className="iridescent">Login</h1>
           <a
-            href="http://127.0.0.1:8020/api/login" // backend login route
+            href="/api/login" // backend login route
             className="btn"
           >
             Login with Google

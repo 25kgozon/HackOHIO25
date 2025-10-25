@@ -1,5 +1,5 @@
 import os
-from flask import Flask, redirect, url_for, session
+from flask import Flask, redirect, url_for, session, jsonify
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 
@@ -20,7 +20,8 @@ google = oauth.register(
 )
 
 
-FRONTEND_COURSE_PAGE = os.getenv("FRONTEND_URL", "http://localhost:5173/courses")
+
+FRONTEND_AUTH = os.getenv("FRONTEND_URI","http://localhost:5173/api/authorize")
 
 
 
@@ -29,8 +30,7 @@ def login():
     """
     Redirect user to Google's OAuth 2.0 consent screen
     """
-    redirect_uri = url_for('authorize', _external=True)
-    return google.authorize_redirect(redirect_uri)
+    return google.authorize_redirect(FRONTEND_AUTH)
 
 @app.route('/api/authorize')
 def authorize():
@@ -43,7 +43,7 @@ def authorize():
     user_info = google.userinfo()             # Fetch user info from Google
     session['user'] = user_info               # Store in session
     # Redirect to frontend course page
-    return redirect(FRONTEND_COURSE_PAGE)
+    return redirect("/courses")
 
 @app.route('/api/logout')
 def logout():
@@ -60,10 +60,10 @@ def get_user():
     """
     user = session.get('user')
     if not user:
-        return {"logged_in": False}, 401
-    return {"logged_in": True, "user": user}
+        return jsonify({"logged_in": False}, 401)
+    return jsonify({"logged_in": True, "user": user})
 
 
 if __name__ == "__main__":
     # Use host=0.0.0.0 if testing in Docker or remote VM
-    app.run(host="127.0.0.1", port=8020, debug=True)
+    app.run(host="127.0.0.1", port=8010, debug=True)

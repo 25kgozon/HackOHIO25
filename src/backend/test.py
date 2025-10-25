@@ -1,6 +1,7 @@
 from db import *
 from s3 import *
 
+import os
 import requests
 
 db: DB = DB()
@@ -8,11 +9,12 @@ db: DB = DB()
 
 def sim_aws_upload(path : str, fid: str):
     url = generate_upload_url(fid)
-    requests.put(url, data=path)
+    requests.put(url, data=open(path, "rb"))
+
 
 
 def sim_student_upload(user : str, path : str):
-    fid = db.create_file(user, FileRole.STUDENT_RESPONSE, "{}")
+    fid = db.create_file(user, os.path.basename(path), FileRole.STUDENT_RESPONSE, "{}")
     print("Generated fid:", fid)
 
     sim_aws_upload(path, fid)
@@ -21,7 +23,7 @@ def sim_student_upload(user : str, path : str):
     print(generate_download_url(fid))
 
 def sim_teacher_upload(user : str, path : str):
-    fid = db.create_file(user, FileRole.TEACHER_KEY, "{}")
+    fid = db.create_file(user, os.path.basename(path), FileRole.TEACHER_KEY, "{}")
     print("Generated fid:", fid)
 
     sim_aws_upload(path, fid)
@@ -39,15 +41,19 @@ def sim_event_ocr(fid : str):
 
 
 
-# Student: 0ffecf6f-4542-4eb1-9a47-b428102a08c9 
-# Teacher: 29e46e27-f961-47ff-b250-215302be9633
+# student: cdaeb3fc-8955-4626-84df-cbaacf0a76ec
+#teacher: 9f16967b-f48e-4e44-a682-fbf32fc5f6c7
 
 
 
 # sim_student_upload("admin", "/home/mitch/Documents/hack/HackOHIO25/src/backend/uploads/midterm 1 - calc iii.pdf")
 # sim_teacher_upload("admin", "/home/mitch/Documents/hack/HackOHIO25/src/backend/uploads/midterm1_solution.pdf")
 
-sim_event_ocr("29e46e27-f961-47ff-b250-215302be9633")
+# sim_event_ocr("ae0767e7-bd6a-47af-9210-917a1e53fb80")
+print(db.get_file_cache("ae0767e7-bd6a-47af-9210-917a1e53fb80"))
+
+
+# print(generate_download_url("9f16967b-f48e-4e44-a682-fbf32fc5f6c7"))
 
 
 

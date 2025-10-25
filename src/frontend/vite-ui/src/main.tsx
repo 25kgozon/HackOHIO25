@@ -24,8 +24,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/courses" element={<CoursesPage />} />
           <Route path="/course/:id" element={<CourseInfoPage />} />
           <Route path="/course/:id/assignment/:assignmentTitle" element={<AssignmentPage />} />
-          <Route path="/submission/:submissionId" element={<SubmittedAssignmentPage />} />
-
+          <Route path="/submissions" element={<SubmissionsPage />} />
           <Route path="/handle_frontend_login" element={<HandleFrontendLogin />} />
         </Routes>
       </Router>

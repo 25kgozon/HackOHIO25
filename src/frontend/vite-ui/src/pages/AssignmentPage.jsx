@@ -16,18 +16,10 @@ const AssignmentPage = () => {
     const { courseTitle, assignmentDetails } = location.state || {};
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    // PDF upload state
+    // ---------- Student Upload ----------
     const [selectedFile, setSelectedFile] = useState(null);
     const [pdfUrl, setPdfUrl] = useState(null);
-    const [answerKeyFile, setAnswerKeyFile] = useState(null);
-    const [answerKeyUrl, setAnswerKeyUrl] = useState(null);
 
-    // Teacher rubric state
-    const [questions, setQuestions] = useState([]);
-
-    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-
-    // ---------- Student Upload ----------
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file && file.type === "application/pdf") {
@@ -44,6 +36,9 @@ const AssignmentPage = () => {
     };
 
     // ---------- Teacher Upload ----------
+    const [answerKeyFile, setAnswerKeyFile] = useState(null);
+    const [answerKeyUrl, setAnswerKeyUrl] = useState(null);
+
     const handleAnswerKeyChange = (e) => {
         const file = e.target.files[0];
         if (file && file.type === "application/pdf") {
@@ -59,27 +54,20 @@ const AssignmentPage = () => {
         setAnswerKeyUrl(null);
     };
 
-    // ---------- Teacher Rubric ----------
-    const addQuestion = () => {
-        setQuestions([...questions, { question: "", points: "" }]);
+    // ---------- AI Instructions ----------
+    const [aiInstructions, setAiInstructions] = useState("");
+    const [showAiInstructions, setShowAiInstructions] = useState(false);
+
+    const toggleAiInstructions = () => setShowAiInstructions(!showAiInstructions);
+
+    const handleSaveAiInstructions = () => {
+        console.log("AI Instructions saved:", aiInstructions);
+        alert("AI Instructions saved! Check console.");
+        setShowAiInstructions(false);
     };
 
-    const updateQuestion = (index, field, value) => {
-        const updated = [...questions];
-        updated[index][field] = value;
-        setQuestions(updated);
-    };
-
-    const removeQuestion = (index) => {
-        const updated = [...questions];
-        updated.splice(index, 1);
-        setQuestions(updated);
-    };
-
-    const handleSaveRubric = () => {
-        console.log("Rubric saved:", questions);
-        alert("Rubric saved! Check console.");
-    };
+    // ---------- Sidebar ----------
+    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
     return (
         <div className="assignment-page">
@@ -117,31 +105,75 @@ const AssignmentPage = () => {
                     )}
                 </div>
 
-                {/* Student Upload */}
+                {/* ---------- Student Upload ---------- */}
                 {!isTeacher && (
                     <div className="upload-section">
                         <h4>Submit Your Assignment:</h4>
-                        <input type="file" accept="application/pdf" id="studentFileInput" style={{ display: "none" }} onChange={handleFileChange} />
-                        <button className="btn" onClick={() => document.getElementById("studentFileInput").click()}>Select PDF</button>
-                        {pdfUrl && <iframe src={pdfUrl} width="100%" height="600px" title="PDF Preview" />}
+                        <input
+                            type="file"
+                            accept="application/pdf"
+                            id="studentFileInput"
+                            style={{ display: "none" }}
+                            onChange={handleFileChange}
+                        />
+                        <button className="btn" onClick={() => document.getElementById("studentFileInput").click()}>
+                            Select PDF
+                        </button>
+                        {pdfUrl && (
+                            <iframe src={pdfUrl} width="100%" height="600px" title="PDF Preview" />
+                        )}
                         <button className="btn" onClick={handleUpload} disabled={!selectedFile}>Upload PDF</button>
                     </div>
                 )}
 
-                {/* Teacher Upload */}
+                {/* ---------- Teacher Upload ---------- */}
                 {isTeacher && (
                     <div className="upload-section">
-                        <h4>Upload Answer Key (Teacher Only):</h4>
-                        <input type="file" accept="application/pdf" id="answerKeyInput" style={{ display: "none" }} onChange={handleAnswerKeyChange} />
-                        <button className="btn" onClick={() => document.getElementById("answerKeyInput").click()}>Select PDF</button>
-                        {answerKeyUrl && <iframe src={answerKeyUrl} width="100%" height="600px" title="Answer Key Preview" />}
-                        <button className="btn" onClick={handleAnswerKeyUpload} disabled={!answerKeyFile}>Upload Answer Key</button>
+                        <h4>Teacher Tools:</h4>
+                        <div className="teacher-buttons">
+                            <input
+                                type="file"
+                                accept="application/pdf"
+                                id="answerKeyInput"
+                                style={{ display: "none" }}
+                                onChange={handleAnswerKeyChange}
+                            />
+                            <button className="btn" onClick={() => document.getElementById("answerKeyInput").click()}>
+                                Select PDF
+                            </button>
+                            <button className="btn" onClick={handleAnswerKeyUpload} disabled={!answerKeyFile}>
+                                Upload Answer Key
+                            </button>
+                            <button className="btn" onClick={toggleAiInstructions}>
+                                {showAiInstructions ? "Close AI Instructions" : "AI Instructions"}
+                            </button>
+                        </div>
 
-                        {/* Rubric Section */}
-                        {isTeacher && (
-                            <Rubric />
+                        {answerKeyUrl && (
+                            <iframe src={answerKeyUrl} width="100%" height="600px" title="Answer Key Preview" />
                         )}
 
+                        {/* Rubric */}
+                        <Rubric />
+
+                        {/* AI Instructions Popup */}
+                        {showAiInstructions && (
+                            <div className="popup-overlay">
+                                <div className="popup-box">
+                                    <h4>AI Instructions</h4>
+                                    <textarea
+                                        value={aiInstructions}
+                                        onChange={(e) => setAiInstructions(e.target.value)}
+                                        rows={8}
+                                        placeholder="Enter instructions for AI grading..."
+                                    />
+                                    <div className="popup-actions">
+                                        <button className="btn" onClick={handleSaveAiInstructions}>Save</button>
+                                        <button className="btn" onClick={toggleAiInstructions}>Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 

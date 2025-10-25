@@ -1,0 +1,37 @@
+.course-info-content {
+    padding: 120px 20px 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.course-title {
+    font-size: 2rem;
+    text-align: center;
+}
+
+.assignments-section {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-brd);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-1);
+}
+
+.assignments-section h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.assignments-section ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.assignments-section li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}

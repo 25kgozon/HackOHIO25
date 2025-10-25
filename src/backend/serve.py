@@ -19,14 +19,10 @@ google = oauth.register(
     client_kwargs={'scope': 'openid email profile'}
 )
 
-# -------------------------------
-# FRONTEND DASHBOARD URL
-# -------------------------------
+
 FRONTEND_COURSE_PAGE = os.getenv("FRONTEND_URL", "http://localhost:5173/courses")
 
-# -------------------------------
-# ROUTES
-# -------------------------------
+
 
 @app.route('/api/login')
 def login():
@@ -67,9 +63,7 @@ def get_user():
         return {"logged_in": False}, 401
     return {"logged_in": True, "user": user}
 
-# -------------------------------
-# MAIN
-# -------------------------------
+
 if __name__ == "__main__":
     # Use host=0.0.0.0 if testing in Docker or remote VM
     app.run(host="127.0.0.1", port=8020, debug=True)

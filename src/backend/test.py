@@ -41,16 +41,16 @@ def sim_event_ocr(fid : str):
 
 
 
-# student: cdaeb3fc-8955-4626-84df-cbaacf0a76ec
-#teacher: 9f16967b-f48e-4e44-a682-fbf32fc5f6c7
+# student: 242f668d-8556-40b7-a0a6-7bb7a4bbc053 
+#teacher: 
 
 
 
 # sim_student_upload("admin", "/home/mitch/Documents/hack/HackOHIO25/src/backend/uploads/midterm 1 - calc iii.pdf")
 # sim_teacher_upload("admin", "/home/mitch/Documents/hack/HackOHIO25/src/backend/uploads/midterm1_solution.pdf")
 
-# sim_event_ocr("ae0767e7-bd6a-47af-9210-917a1e53fb80")
-print(db.get_file_cache("ae0767e7-bd6a-47af-9210-917a1e53fb80"))
+# sim_event_ocr("242f668d-8556-40b7-a0a6-7bb7a4bbc053")
+print(db.get_file_cache("242f668d-8556-40b7-a0a6-7bb7a4bbc053"))
 
 
 # print(generate_download_url("9f16967b-f48e-4e44-a682-fbf32fc5f6c7"))

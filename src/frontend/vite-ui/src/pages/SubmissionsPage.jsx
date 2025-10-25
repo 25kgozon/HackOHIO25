@@ -9,23 +9,16 @@ const submittedAssignments = [
         courseId: 1,
         courseTitle: "Calculus 101",
         submissions: [
-            { title: "Homework 1", student: "Alice", submittedOn: "Oct 15", grade: "95%" },
-            { title: "Quiz 1", student: "Bob", submittedOn: "Oct 17", grade: "88%" },
+            { title: "Homework 1", student: "Alice", submittedOn: "Oct 15", grade: "95%", comments: ["Good work!", "Check question 2"] },
+            { title: "Quiz 1", student: "Bob", submittedOn: "Oct 17", grade: "88%", comments: ["Review question 3"] },
         ],
     },
     {
         courseId: 2,
         courseTitle: "Physics 201",
         submissions: [
-            { title: "Lab Report 0", student: "Charlie", submittedOn: "Oct 14", grade: "100%" },
-            { title: "Homework 1", student: "David", submittedOn: "Oct 16", grade: "92%" },
-        ],
-    },
-    {
-        courseId: 3,
-        courseTitle: "Computer Science 101",
-        submissions: [
-            { title: "Project 1", student: "Eve", submittedOn: "Oct 20", grade: "89%" },
+            { title: "Lab Report 0", student: "Charlie", submittedOn: "Oct 14", grade: "100%", comments: [] },
+            { title: "Homework 1", student: "David", submittedOn: "Oct 16", grade: "92%", comments: ["Well done!"] },
         ],
     },
 ];
@@ -66,7 +59,16 @@ const SubmissionsPage = () => {
                             <h3 className="course-title">{course.courseTitle}</h3>
                             <div className="submission-cards">
                                 {course.submissions.map((sub, idx) => (
-                                    <div key={idx} className="submission-card">
+                                    <div
+                                        key={idx}
+                                        className="submission-card"
+                                        onClick={() =>
+                                            navigate(`/submission/${sub.id}`, {
+                                                state: { submission: sub, courseTitle: course.courseTitle }
+                                            })
+
+                                        }
+                                    >
                                         <div>
                                             <strong>{sub.title}</strong> - {sub.student}
                                         </div>

@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS assignments (
 -- All files that are in the site
 CREATE TABLE IF NOT EXISTS files (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    posted_user UUID,
+    posted_user VARCHAR(254),
     file_role INT, -- FileRole
     context TEXT
 );

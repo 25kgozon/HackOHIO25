@@ -1,9 +1,9 @@
 # Build Vite frontend
 FROM node:20-alpine AS build
 WORKDIR /app
-COPY vite-ui/package*.json ./
+COPY src/frontend/vite-ui/package*.json ./
 RUN npm ci
-COPY vite-ui/ .
+COPY src/frontend/vite-ui/ .
 RUN npm run build
 
 # Nginx runtime

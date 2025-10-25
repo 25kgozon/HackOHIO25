@@ -1,7 +1,7 @@
 import os
 import enum
 import json
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 from contextlib import contextmanager
 
@@ -9,28 +9,27 @@ import psycopg2
 import psycopg2.pool
 
 
-class EventStatus(enum.Enum):
+class EventStatus(enum.IntEnum):
     QUEUED = 0
     RUNNING = 1
     COMPLETE = 2
 
 
-class UserRole(enum.Enum):
+class UserRole(enum.IntEnum):
     STUDENT = 1
     TEACHER = 2
     ADMIN = 3
 
 
-class FileRole(enum.Enum):
+class FileRole(enum.IntEnum):
     STUDENT_COPY = 1
     STUDENT_RESPONSE = 2
     TEACHER_KEY = 3
     TEACHER_CONTEXT = 4
 
 
-class TaskType(enum.Enum):
-    SINGLE_PDF = 1
-    MANY_TEXT = 2
+class TaskType(enum.IntEnum):
+    GENERIC = 1
 
 
 SCHEMA = """
@@ -38,52 +37,57 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE IF NOT EXISTS users (
     openid VARCHAR(254) PRIMARY KEY,
-
     name TEXT,
-
-    -- Json
-    other_properites TEXT,
-
+    -- JSON as text (caller serializes)
+    other_properties TEXT,
     email TEXT,
     role INT, -- UserRole
-
-    classes UUID[]
+    classes UUID[] DEFAULT '{}'
 );
 
 CREATE TABLE IF NOT EXISTS classes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT,
     description TEXT,
-    assignments UUID[]
+    assignments UUID[] DEFAULT '{}'
 );
 
 CREATE TABLE IF NOT EXISTS assignments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT,
     description TEXT,
-    attrs TEXT, -- JSON dict TODO
-    context TEXT,
-    files UUID[]
+    attrs TEXT,    -- JSON dict as text
+    context TEXT,  -- JSON as text
+    files UUID[] DEFAULT '{}'
 );
 
 -- All files that are in the site
 CREATE TABLE IF NOT EXISTS files (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    posted_user UUID,
+    posted_user VARCHAR(254), -- references users.openid (no FK for now)
     file_role INT, -- FileRole
-    context TEXT
+    context TEXT   -- JSON as text
 );
 
 CREATE TABLE IF NOT EXISTS file_cache (
     id UUID PRIMARY KEY, -- Same as key in `files`
-    results TEXT
+    results TEXT         -- JSON as text
 );
 
 CREATE TABLE IF NOT EXISTS file_task (
     id SERIAL PRIMARY KEY,
-    isRunning BIT,
-    task_type INT, -- TaskType
-    files UUID[]
+    isRunning BOOLEAN NOT NULL DEFAULT FALSE,
+    task_type INT NOT NULL,  -- TaskType
+    -- JSON
+    prompt_info TEXT,
+    files UUID[] DEFAULT '{}'
+);
+
+CREATE TABLE IF NOT EXISTS text_task (
+    id SERIAL PRIMARY KEY,
+    isRunning BOOLEAN NOT NULL DEFAULT FALSE,
+    -- JSON
+    prompt_info TEXT
 );
 """
 
@@ -138,19 +142,24 @@ class DB:
     # Helpers
     # -----------------------
     @staticmethod
-    def _bit_to_bool(val: Any) -> bool:
+    def _to_json_text(val: Any) -> Optional[str]:
         if val is None:
-            return False
-        if isinstance(val, (bytes, bytearray, memoryview)):
-            try:
-                val = bytes(val).decode()
-            except Exception:
-                val = str(val)
-        s = str(val).strip()
-        return s in ("1", "t", "T", "True", "true", "B'1'")
+            return None
+        if isinstance(val, (dict, list)):
+            return json.dumps(val)
+        return str(val)
+
+    @staticmethod
+    def _from_json_text(val: Optional[str]) -> Any:
+        if val is None:
+            return None
+        try:
+            return json.loads(val)
+        except Exception:
+            return val
 
     # -----------------------
-    # Users (updated schema)
+    # Users
     # -----------------------
     def upsert_user(
         self,
@@ -162,33 +171,29 @@ class DB:
         other_properties: Optional[Any] = None,
     ) -> None:
         classes = classes or []
-        other_props_txt = (
-            json.dumps(other_properties)
-            if isinstance(other_properties, (dict, list))
-            else other_properties
-        )
+        other_props_txt = self._to_json_text(other_properties)
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
                 INSERT INTO users (
-                    openid, name, other_properites, email, role, classes
+                    openid, name, other_properties, email, role, classes
                 )
                 VALUES (%s, %s, %s, %s, %s, %s)
                 ON CONFLICT (openid) DO UPDATE
                 SET name = EXCLUDED.name,
-                    other_properites = EXCLUDED.other_properites,
+                    other_properties = EXCLUDED.other_properties,
                     email = EXCLUDED.email,
                     role = EXCLUDED.role,
                     classes = EXCLUDED.classes
                 """,
-                (openid, name, other_props_txt, email, role.value, classes),
+                (openid, name, other_props_txt, email, int(role), classes),
             )
 
     def get_user(self, openid: str) -> Optional[Dict[str, Any]]:
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
-                SELECT openid, name, other_properites, email, role, classes
+                SELECT openid, name, other_properties, email, role, classes
                 FROM users
                 WHERE openid = %s
                 """,
@@ -197,17 +202,12 @@ class DB:
             row = cur.fetchone()
             if not row:
                 return None
-            other_props = row[2]
-            try:
-                other_props = json.loads(other_props) if other_props else None
-            except Exception:
-                pass
             return {
                 "openid": row[0],
                 "name": row[1],
-                "other_properites": other_props,  # column name kept as-is
+                "other_properties": self._from_json_text(row[2]),
                 "email": row[3],
-                "role": row[4],
+                "role": int(row[4]) if row[4] is not None else None,
                 "classes": row[5],
             }
 
@@ -220,9 +220,7 @@ class DB:
         file_role: FileRole,
         context: Optional[Any] = None,
     ) -> str:
-        context_txt = (
-            json.dumps(context) if isinstance(context, (dict, list)) else context
-        )
+        context_txt = self._to_json_text(context)
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
@@ -230,7 +228,7 @@ class DB:
                 VALUES (%s, %s, %s)
                 RETURNING id
                 """,
-                (posted_user, file_role.value, context_txt),
+                (posted_user, int(file_role), context_txt),
             )
             (fid,) = cur.fetchone()
             return str(fid)
@@ -248,16 +246,11 @@ class DB:
             row = cur.fetchone()
             if not row:
                 return None
-            ctx = row[3]
-            try:
-                parsed_ctx = json.loads(ctx) if ctx else None
-            except Exception:
-                parsed_ctx = ctx
             return {
                 "id": str(row[0]),
-                "posted_user": str(row[1]) if row[1] else None,
-                "file_role": row[2],
-                "context": parsed_ctx,
+                "posted_user": row[1],
+                "file_role": int(row[2]) if row[2] is not None else None,
+                "context": self._from_json_text(row[3]),
             }
 
     def delete_file(self, file_id: str) -> bool:
@@ -269,9 +262,7 @@ class DB:
     # File cache
     # -----------------------
     def set_file_cache(self, file_id: str, results: Any) -> None:
-        results_txt = (
-            json.dumps(results) if isinstance(results, (dict, list)) else str(results)
-        )
+        results_txt = self._to_json_text(results)
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
@@ -289,11 +280,7 @@ class DB:
             row = cur.fetchone()
             if not row:
                 return None
-            val = row[0]
-            try:
-                return json.loads(val)
-            except Exception:
-                return val
+            return self._from_json_text(row[0])
 
     def delete_file_cache(self, file_id: str) -> bool:
         with self._conn_cur() as (_, cur):
@@ -308,10 +295,10 @@ class DB:
             cur.execute(
                 """
                 INSERT INTO file_task (isRunning, task_type, files)
-                VALUES (B'0', %s, %s)
+                VALUES (FALSE, %s, %s)
                 RETURNING id
                 """,
-                (task_type.value, files),
+                (int(task_type), files),
             )
             (task_id,) = cur.fetchone()
             return int(task_id)
@@ -324,13 +311,13 @@ class DB:
                 WITH cte AS (
                     SELECT id
                     FROM file_task
-                    WHERE isRunning = B'0'
+                    WHERE isRunning = FALSE
                     ORDER BY id
                     FOR UPDATE SKIP LOCKED
                     LIMIT 1
                 )
                 UPDATE file_task ft
-                SET isRunning = B'1'
+                SET isRunning = TRUE
                 FROM cte
                 WHERE ft.id = cte.id
                 RETURNING ft.id, ft.task_type, ft.files
@@ -360,7 +347,7 @@ class DB:
                 return None
             return {
                 "id": int(row[0]),
-                "isRunning": self._bit_to_bool(row[1]),
+                "isRunning": bool(row[1]),
                 "task_type": int(row[2]),
                 "files": row[3] or [],
             }
@@ -369,10 +356,11 @@ class DB:
         self, running: Optional[bool] = None, limit: int = 100, offset: int = 0
     ) -> List[Dict[str, Any]]:
         where = ""
+        params: List[Any] = [limit, offset]
         if running is True:
-            where = "WHERE isRunning = B'1'"
+            where = "WHERE isRunning = TRUE"
         elif running is False:
-            where = "WHERE isRunning = B'0'"
+            where = "WHERE isRunning = FALSE"
         with self._conn_cur() as (_, cur):
             cur.execute(
                 f"""
@@ -382,7 +370,7 @@ class DB:
                 ORDER BY id
                 LIMIT %s OFFSET %s
                 """,
-                (limit, offset),
+                params,
             )
             rows = cur.fetchall()
             out: List[Dict[str, Any]] = []
@@ -390,7 +378,7 @@ class DB:
                 out.append(
                     {
                         "id": int(r[0]),
-                        "isRunning": self._bit_to_bool(r[1]),
+                        "isRunning": bool(r[1]),
                         "task_type": int(r[2]),
                         "files": r[3] or [],
                     }
@@ -407,7 +395,7 @@ class DB:
             cur.execute(
                 """
                 UPDATE file_task
-                SET isRunning = B'0'
+                SET isRunning = FALSE
                 WHERE id = %s
                 """,
                 (task_id,),
@@ -416,5 +404,7 @@ class DB:
 
     def reset_all_running_to_queued(self) -> int:
         with self._conn_cur() as (_, cur):
-            cur.execute("UPDATE file_task SET isRunning = B'0' WHERE isRunning = B'1'")
+            cur.execute(
+                "UPDATE file_task SET isRunning = FALSE WHERE isRunning = TRUE"
+            )
             return cur.rowcount

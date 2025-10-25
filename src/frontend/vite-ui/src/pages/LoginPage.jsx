@@ -22,7 +22,7 @@ const LoginPage = () => {
         <h1 className="iridescent">Login</h1>
 
         <a
-          href="http://127.0.0.1:8020/login" // <-- Flask backend login route
+          href="http://127.0.0.1:8020/api/login" // <-- Flask backend login route
           className="btn"
         >
           Login with Google

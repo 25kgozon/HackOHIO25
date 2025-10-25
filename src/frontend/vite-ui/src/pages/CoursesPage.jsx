@@ -20,7 +20,7 @@ const CoursesPage = () => {
         <div className="courses-page">
             <header className="main-header">
                 <button className="menu-btn" onClick={toggleSidebar}>☰</button>
-                <h1 className="title-text">GrAIscope</h1>
+                <h1 className="title-text">GrAIscope | Courses</h1>
             </header>
 
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />

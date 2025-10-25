@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import "../styles/CourseInfoPage.css";
 
@@ -17,6 +17,7 @@ const sampleAssignments = {
 const CourseInfoPage = () => {
     const { id } = useParams();
     const location = useLocation();
+    const navigate = useNavigate(); // <-- Add this
     const courseTitle = location.state?.courseTitle || `Course #${id}`;
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -26,7 +27,7 @@ const CourseInfoPage = () => {
         <div className="course-info-page">
             <header className="main-header">
                 <button className="menu-btn" onClick={toggleSidebar}>☰</button>
-                <h1 className="title-text">GrAIscope</h1>
+                <h1 className="title-text">GrAIscope | Course Info</h1>
             </header>
 
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
@@ -38,7 +39,16 @@ const CourseInfoPage = () => {
                     <h3>Upcoming Assignments</h3>
                     <div className="assignment-cards">
                         {sampleAssignments.upcoming.map((a, idx) => (
-                            <div key={idx} className="assignment-card upcoming">
+                            <div
+                                key={idx}
+                                className="assignment-card upcoming"
+                                onClick={() =>
+                                    navigate(`/course/${id}/assignment/${a.title}`, {
+                                        state: { courseTitle, assignmentDetails: a },
+                                    })
+                                }
+
+                            >
                                 <strong>{a.title}</strong>
                                 <p>Due: {a.due}</p>
                             </div>

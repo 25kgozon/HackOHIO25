@@ -20,7 +20,7 @@ const MainPage = () => {
                 <button className="menu-btn" onClick={toggleSidebar}>
                     ☰
                 </button>
-                <h1 className="title-text"> GrAIscope</h1>
+                <h1 className="title-text"> GrAIscope | Dashboard</h1>
             </header>
 
             {/* Sidebar */}

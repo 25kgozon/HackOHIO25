@@ -1,40 +1,28 @@
-/* ---------- Course Info Page ---------- */
-.course-info-content {
-    padding: 120px 20px 40px 20px;
+.assignment-content {
+    padding: 120px 20px 20px 20px;
     max-width: 900px;
     margin: 0 auto;
 }
 
-.course-title {
-    font-size: 2rem;
-    margin-bottom: 2rem;
-}
-
-.assignments-section {
-    margin-bottom: 3rem;
-    /* space between upcoming and graded sections */
-}
-
-.assignments-section h3 {
-    font-size: 1.4rem;
+.assignment-title {
+    font-size: 1.8rem;
     margin-bottom: 1rem;
 }
 
-.assignment-cards {
+.assignment-details {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    /* space between individual cards */
+    gap: 1rem;
+    margin-bottom: 2rem;
 }
 
 .assignment-card {
     background: var(--glass-bg);
     border: 1px solid var(--glass-brd);
     border-radius: 1.5rem;
-    padding: 1.5rem 2rem;
+    padding: 1.25rem 1.5rem;
     box-shadow: 0 8px 30px rgba(24, 24, 55, 0.25);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    cursor: pointer;
 }
 
 .assignment-card:hover {

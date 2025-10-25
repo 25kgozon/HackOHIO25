@@ -33,6 +33,10 @@ class FileRole(enum.Enum):
     TEACHER_KEY = 3
     TEACHER_CONTEXT = 4
 
+class TaskType(enum.Enum):
+    SINGLE_PDF = 1
+
+    MANY_TEXT = 2
 
 
 
@@ -95,6 +99,15 @@ CREATE TABLE IF NOT EXISTS file_cache (
 
 CREATE TABLE IF NOT EXISTS file_task (
     id SERIAL PRIMARY KEY,
+
+    -- TaskType
+    task_type INT,
+
+    files UUID[],
+
+
+
+
 
 
 

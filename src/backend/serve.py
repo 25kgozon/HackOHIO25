@@ -30,6 +30,8 @@ def login():
     """
     Redirect user to Google's OAuth 2.0 consent screen
     """
+
+
     return google.authorize_redirect(FRONTEND_AUTH)
 
 @app.route('/api/authorize')

@@ -320,7 +320,7 @@ class DB:
             cur.execute(
                 """
                 INSERT INTO file_task (isRunning, task_type, prompt_info, files)
-                VALUES (B'0', %s, %s, %s)
+                VALUES (B'0', %s, %s, %s::uuid[])
                 RETURNING id
                 """,
                 (task_type.value, prompt_txt, files),

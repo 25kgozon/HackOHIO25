@@ -75,6 +75,7 @@
     gap: 1rem;
     box-shadow: var(--shadow-1);
     text-align: center;
+    background-color: #eef2ff;
 }
 
 .modal-content input {

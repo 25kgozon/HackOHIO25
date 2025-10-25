@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
+import { useUser } from "../context/UserContext"; // ✅ Import your context
 import "../styles/AssignmentPage.css";
 
 const AssignmentPage = () => {
@@ -8,7 +9,10 @@ const AssignmentPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const { courseTitle, assignmentDetails, isTeacher } = location.state || {};
+    const { user } = useUser(); // ✅ Access the logged-in user + role
+    const isTeacher = user?.role === "teacher"; // ✅ Derive from context
+
+    const { courseTitle, assignmentDetails } = location.state || {};
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [pdfUrl, setPdfUrl] = useState(null);
@@ -17,7 +21,9 @@ const AssignmentPage = () => {
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-    // Student assignment PDF
+    console.log(isTeacher ? "Teacher View" : "Student View");
+
+    // ---------- Student Upload ----------
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file && file.type === "application/pdf") {
@@ -38,7 +44,7 @@ const AssignmentPage = () => {
         setPdfUrl(null);
     };
 
-    // Teacher answer key PDF
+    // ---------- Teacher Upload ----------
     const handleAnswerKeyChange = (e) => {
         const file = e.target.files[0];
         if (file && file.type === "application/pdf") {
@@ -61,15 +67,19 @@ const AssignmentPage = () => {
 
     return (
         <div className="assignment-page">
-
-            {console.log(isTeacher ? "Teacher View" : "Student View")}
-            <header className="main-header">
-                <button className="menu-btn" onClick={toggleSidebar}>☰</button>
-                <h1 className="title-text">GrAIscope | Assignment Info</h1>
-            </header>
+            {/* ---------- Header ---------- */}
+            {user && (
+                <header className="main-header">
+                    <button className="menu-btn" onClick={toggleSidebar}>
+                        ☰
+                    </button>
+                    <h1 className="title-text">GrAIscope | Assignment Info</h1>
+                </header>
+            )}
 
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
+            {/* ---------- Main Content ---------- */}
             <main className="assignment-content fade-in">
                 <h2 className="course-title iridescent">{courseTitle}</h2>
                 <h3 className="assignment-title">{assignmentTitle}</h3>
@@ -95,7 +105,7 @@ const AssignmentPage = () => {
                     )}
                 </div>
 
-                {/* Student Upload Section (hidden from teachers) */}
+                {/* ---------- Student Upload Section ---------- */}
                 {!isTeacher && (
                     <div className="upload-section">
                         <h4>Submit Your Assignment:</h4>
@@ -106,7 +116,10 @@ const AssignmentPage = () => {
                             style={{ display: "none" }}
                             onChange={handleFileChange}
                         />
-                        <button className="btn" onClick={() => document.getElementById("studentFileInput").click()}>
+                        <button
+                            className="btn"
+                            onClick={() => document.getElementById("studentFileInput").click()}
+                        >
                             Select PDF
                         </button>
 
@@ -123,7 +136,7 @@ const AssignmentPage = () => {
                     </div>
                 )}
 
-                {/* Teacher Upload Section (hidden from students) */}
+                {/* ---------- Teacher Upload Section ---------- */}
                 {isTeacher && (
                     <div className="upload-section">
                         <h4>Upload Answer Key (Teacher Only):</h4>
@@ -134,7 +147,10 @@ const AssignmentPage = () => {
                             style={{ display: "none" }}
                             onChange={handleAnswerKeyChange}
                         />
-                        <button className="btn" onClick={() => document.getElementById("answerKeyInput").click()}>
+                        <button
+                            className="btn"
+                            onClick={() => document.getElementById("answerKeyInput").click()}
+                        >
                             Select PDF
                         </button>
 
@@ -145,7 +161,11 @@ const AssignmentPage = () => {
                             </div>
                         )}
 
-                        <button className="btn" onClick={handleAnswerKeyUpload} disabled={!answerKeyFile}>
+                        <button
+                            className="btn"
+                            onClick={handleAnswerKeyUpload}
+                            disabled={!answerKeyFile}
+                        >
                             Upload Answer Key
                         </button>
                     </div>

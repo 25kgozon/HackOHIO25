@@ -1,7 +1,15 @@
+from dotenv import load_dotenv
+
+import os
+load_dotenv()
+
+
+
+
+
 from db import *
 from s3 import *
 
-import os
 import requests
 
 db: DB = DB()

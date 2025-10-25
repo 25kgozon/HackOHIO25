@@ -1,6 +1,7 @@
 #!/bin/env sh
 set -e
 
+source .env
 
 sudo docker compose up db -d
 

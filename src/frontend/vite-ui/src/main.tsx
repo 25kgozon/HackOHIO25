@@ -9,7 +9,7 @@ import CoursesPage from './pages/CoursesPage.jsx';
 import CourseInfoPage from './pages/CourseInfoPage.jsx';
 import AssignmentPage from './pages/AssignmentPage.jsx';
 import SubmissionsPage from './pages/SubmissionsPage.jsx';
-import SubmittedAssignmentPage from './pages/SubmittedAssignmentPage.jsx';
+import HandleFrontendLogin from './pages/HandleFrontendLogin.jsx' 
 
 // --- Context ---//
 import { UserProvider } from './context/UserContext.jsx';
@@ -24,9 +24,9 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/courses" element={<CoursesPage />} />
           <Route path="/course/:id" element={<CourseInfoPage />} />
           <Route path="/course/:id/assignment/:assignmentTitle" element={<AssignmentPage />} />
-          <Route path="/submissions" element={<SubmissionsPage />} />
           <Route path="/submission/:submissionId" element={<SubmittedAssignmentPage />} />
 
+          <Route path="/handle_frontend_login" element={<HandleFrontendLogin />} />
         </Routes>
       </Router>
     </UserProvider>

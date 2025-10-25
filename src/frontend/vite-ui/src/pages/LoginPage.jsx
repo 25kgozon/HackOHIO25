@@ -12,9 +12,7 @@ const LoginPage = () => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const handleLogin = (role) => {
-    // Simulate Google login + role selection
-    login("Sample User", role);
-    navigate("/main-page");
+    location.href = "/api/login?role=" + role;
   };
 
   return (

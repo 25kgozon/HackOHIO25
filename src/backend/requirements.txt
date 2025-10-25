@@ -4,4 +4,3 @@ psycopg2-binary
 boto3
 openai
 dotenv
-os

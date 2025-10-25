@@ -29,7 +29,7 @@ const LoginPage = () => {
             <div className="login-card card fade-in">
                 <h1 className="iridescent">Login</h1>
                 <form onSubmit={handleLogin} className="login-form">
-                    <label>Email</label>
+
                     <input
                         type="email"
                         className="input"
@@ -38,7 +38,7 @@ const LoginPage = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                     />
-                    <label>Password</label>
+
                     <input
                         type="password"
                         className="input"

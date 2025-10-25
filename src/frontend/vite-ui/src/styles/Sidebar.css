@@ -3,7 +3,6 @@
     position: fixed;
     top: 0;
     left: -280px;
-    /* completely hidden offscreen */
     width: 280px;
     height: 100%;
     background: var(--glass-bg);
@@ -16,6 +15,8 @@
     flex-direction: column;
     padding-top: 80px;
     font-family: var(--font-sans);
+    row-gap: 1rem;
+    /* adds consistent spacing between child elements */
 }
 
 /* ---------- Open State ---------- */
@@ -30,6 +31,8 @@
     align-items: flex-start;
     padding: var(--s-6);
     width: 100%;
+    row-gap: 1rem;
+    /* extra spacing between menu items */
 }
 
 /* ---------- Close Button ---------- */
@@ -44,7 +47,6 @@
     color: var(--indigo-600);
     transition: transform 0.15s ease;
     z-index: 1100;
-    /* above other content */
 }
 
 .closeBtn:hover {
@@ -52,26 +54,30 @@
     color: var(--fuchsia-400);
 }
 
-
 /* ---------- Menu ---------- */
 .sidebarMenu {
     list-style: none;
     padding: 0;
     margin: 0;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.8rem;
+    /* more vertical space between items */
 }
 
 .sidebarMenu li {
-    padding: 14px var(--s-4);
+    padding: 16px var(--s-4);
+    /* slightly taller padding */
     cursor: pointer;
     font-size: 1.1rem;
     border-radius: var(--r-lg);
-    margin-bottom: var(--s-2);
+    margin-bottom: 0;
+    /* handled by row-gap now */
     transition: background 0.25s ease, transform 0.15s ease;
     position: relative;
 }
 
-/* Iridescent hover effect */
 .sidebarMenu li::before {
     content: "";
     position: absolute;
@@ -91,7 +97,6 @@
     transform: translateX(4px);
 }
 
-/* ---------- Optional Accent Icons ---------- */
 .sidebarMenu li span.icon {
     margin-right: var(--s-2);
     font-size: 1.2rem;
@@ -105,6 +110,7 @@
 
     .sidebarMenu li {
         font-size: 1rem;
-        padding: 12px var(--s-3);
+        padding: 14px var(--s-3);
+        /* slightly more vertical padding on mobile */
     }
 }

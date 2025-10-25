@@ -103,14 +103,7 @@ CREATE TABLE IF NOT EXISTS file_task (
     -- TaskType
     task_type INT,
 
-    files UUID[],
-
-
-
-
-
-
-
+    files UUID[]
 
 );
 

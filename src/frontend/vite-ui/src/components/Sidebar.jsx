@@ -5,7 +5,7 @@ import "../styles/Sidebar.css";
 const Sidebar = ({ isOpen, onClose, isLoggedIn }) => {
 
     const handleNavigate = (path) => {
-        console.log(isLoggedIn);
+        console.log(path);
         onClose();
     };
 
@@ -24,19 +24,15 @@ const Sidebar = ({ isOpen, onClose, isLoggedIn }) => {
 
                 {/* Menu items */}
                 <ul className="sidebarMenu">
-                    <li onClick={() => handleNavigate("/")}>🏠 Home</li>
-                    <li onClick={() => handleNavigate(isLoggedIn ? "/profile" : "/account")}>
-                        {isLoggedIn ? "👤 Profile" : "👤 Login"}</li>
-                    {isLoggedIn && (
-                        <li onClick={() => handleNavigate("/saved-foods")}>📖 Saved Foods</li>
-                    )}
-                    <li onClick={() => handleNavigate("/explore")}>🍽️ Explore</li>
-                    <li onClick={() => handleNavigate("/friends")}>👥 Friends</li>
+                    <li onClick={() => handleNavigate("/login")}>👤 Login / Profile</li>
+                    <li onClick={() => handleNavigate("/")}>🏠 Dashboard</li>
+                    <li onClick={() => handleNavigate("/courses")}>📚 Courses</li>
+                    <li onClick={() => handleNavigate("/assignments")}>📝 Assignments</li>
+                    <li onClick={() => handleNavigate("/submissions")}>📤 Submissions</li>
+                    <li onClick={() => handleNavigate("/grades")}>📊 Grades</li>
                     <li onClick={() => handleNavigate("/settings")}>⚙️ Settings</li>
-                    {isLoggedIn && (
-                        <li onClick={handleLogout}>🚪 Logout</li>
-                    )}
                 </ul>
+
             </div>
         </div>
     );

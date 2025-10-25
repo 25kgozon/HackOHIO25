@@ -4,6 +4,10 @@ from concurrent.futures import ThreadPoolExecutor, Future
 import traceback
 import time
 import os
+import tempfile
+import s3
+
+
 try:
     from grader import AIGrader
 except ImportError:
@@ -15,8 +19,36 @@ WORKERS = 1
 
 
 
-def run_file_event(id : int, task_type : int, prompt_info : dict, files : list[str]):
-    print(id, task_type, prompt_info, files)
+def run_file_event(db : DB, id : int, task_type : int, prompt_info : dict, files : list[str]):
+    initial = str(files[0])
+
+     
+    grader = AIGrader()
+
+    fileInfo = db.get_file(initial)
+    is_teacher = fileInfo["file_role"] == FileRole.TEACHER_KEY.value
+
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        tmp = tmp.name
+
+        # Might throw botocore.exceptions.ClientError
+        s3.download_by_key(initial, tmp)
+        out = grader.read_teacher_files(tmp)
+
+        db.complete_file_task(id)
+        db.set_file_cache(initial, out)
+
+
+
+
+
+
+
+
+
+
+
+
 
 def main():
     db: DB = DB()
@@ -28,7 +60,7 @@ def main():
     with ThreadPoolExecutor(max_workers=WORKERS) as exec:
         event = db.dequeue_file_task()
         if event is not None:
-            running = exec.submit(run_file_event, **event)
+            running = exec.submit(run_file_event, db, **event)
         else:
             print("No task")
             return

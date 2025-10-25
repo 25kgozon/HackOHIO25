@@ -5,6 +5,10 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 from contextlib import contextmanager
 
+
+import psycopg2.extras
+psycopg2.extras.register_uuid()
+
 import psycopg2
 import psycopg2.pool
 
@@ -68,6 +72,7 @@ CREATE TABLE IF NOT EXISTS assignments (
 CREATE TABLE IF NOT EXISTS files (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     posted_user VARCHAR(254),
+    file_name TEXT,
     file_role INT, -- FileRole
     context TEXT
 );
@@ -235,6 +240,7 @@ class DB:
     def create_file(
         self,
         posted_user: Optional[str],
+        file_name : str,
         file_role: FileRole,
         context: Optional[Any] = None,
     ) -> str:
@@ -242,11 +248,11 @@ class DB:
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
-                INSERT INTO files (posted_user, file_role, context)
-                VALUES (%s, %s, %s)
+                INSERT INTO files (posted_user, file_name, file_role, context)
+                VALUES (%s, %s, %s, %s)
                 RETURNING id
                 """,
-                (posted_user, file_role.value, context_txt),
+                (posted_user, file_name, file_role.value, context_txt),
             )
             (fid,) = cur.fetchone()
             return str(fid)
@@ -255,7 +261,7 @@ class DB:
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
-                SELECT id, posted_user, file_role, context
+                SELECT id, posted_user, file_name, file_role, context
                 FROM files
                 WHERE id = %s
                 """,
@@ -268,7 +274,8 @@ class DB:
             return {
                 "id": str(row[0]),
                 "posted_user": str(row[1]) if row[1] else None,
-                "file_role": row[2],
+                "file_name": str(row[2]),
+                "file_role": row[3],
                 "context": ctx,
             }
 
@@ -344,7 +351,7 @@ class DB:
                 SET isRunning = B'1'
                 FROM cte
                 WHERE ft.id = cte.id
-                RETURNING ft.id, ft.task_type, ft.prompt_info, ft.files
+                RETURNING ft.id, ft.task_type, ft.prompt_info, ft.files::uuid[]
                 """
             )
             row = cur.fetchone()

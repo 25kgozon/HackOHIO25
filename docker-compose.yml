@@ -22,6 +22,7 @@ services:
     container_name: backend
     environment:
       DATABASE_URL: postgres://appuser:apppass@db:5432/appdb
+      FRONTEND_URI: "http://localhost:80/api/authorize"
     depends_on:
       - db
     expose:

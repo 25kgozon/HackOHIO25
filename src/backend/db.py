@@ -38,8 +38,15 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE IF NOT EXISTS users (
     openid VARCHAR(254) PRIMARY KEY,
+
+    name TEXT,
+
+    -- Json
+    other_properites TEXT,
+
     email TEXT,
     role INT, -- UserRole
+
     classes UUID[]
 );
 
@@ -128,7 +135,22 @@ class DB:
             self.pool.putconn(con)
 
     # -----------------------
-    # Users
+    # Helpers
+    # -----------------------
+    @staticmethod
+    def _bit_to_bool(val: Any) -> bool:
+        if val is None:
+            return False
+        if isinstance(val, (bytes, bytearray, memoryview)):
+            try:
+                val = bytes(val).decode()
+            except Exception:
+                val = str(val)
+        s = str(val).strip()
+        return s in ("1", "t", "T", "True", "true", "B'1'")
+
+    # -----------------------
+    # Users (updated schema)
     # -----------------------
     def upsert_user(
         self,
@@ -136,35 +158,57 @@ class DB:
         email: Optional[str],
         role: UserRole,
         classes: Optional[List[str]] = None,
+        name: Optional[str] = None,
+        other_properties: Optional[Any] = None,
     ) -> None:
         classes = classes or []
+        other_props_txt = (
+            json.dumps(other_properties)
+            if isinstance(other_properties, (dict, list))
+            else other_properties
+        )
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
-                INSERT INTO users (openid, email, role, classes)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO users (
+                    openid, name, other_properites, email, role, classes
+                )
+                VALUES (%s, %s, %s, %s, %s, %s)
                 ON CONFLICT (openid) DO UPDATE
-                SET email = EXCLUDED.email,
+                SET name = EXCLUDED.name,
+                    other_properites = EXCLUDED.other_properites,
+                    email = EXCLUDED.email,
                     role = EXCLUDED.role,
                     classes = EXCLUDED.classes
                 """,
-                (openid, email, role.value, classes),
+                (openid, name, other_props_txt, email, role.value, classes),
             )
 
     def get_user(self, openid: str) -> Optional[Dict[str, Any]]:
         with self._conn_cur() as (_, cur):
             cur.execute(
-                "SELECT openid, email, role, classes FROM users WHERE openid = %s",
+                """
+                SELECT openid, name, other_properites, email, role, classes
+                FROM users
+                WHERE openid = %s
+                """,
                 (openid,),
             )
             row = cur.fetchone()
             if not row:
                 return None
+            other_props = row[2]
+            try:
+                other_props = json.loads(other_props) if other_props else None
+            except Exception:
+                pass
             return {
                 "openid": row[0],
-                "email": row[1],
-                "role": row[2],
-                "classes": row[3],
+                "name": row[1],
+                "other_properites": other_props,  # column name kept as-is
+                "email": row[3],
+                "role": row[4],
+                "classes": row[5],
             }
 
     # -----------------------
@@ -225,8 +269,8 @@ class DB:
     # File cache
     # -----------------------
     def set_file_cache(self, file_id: str, results: Any) -> None:
-        results_txt = json.dumps(results) if isinstance(results, (dict, list)) else str(
-            results
+        results_txt = (
+            json.dumps(results) if isinstance(results, (dict, list)) else str(results)
         )
         with self._conn_cur() as (_, cur):
             cur.execute(
@@ -241,9 +285,7 @@ class DB:
 
     def get_file_cache(self, file_id: str) -> Optional[Any]:
         with self._conn_cur() as (_, cur):
-            cur.execute(
-                "SELECT results FROM file_cache WHERE id = %s", (file_id,)
-            )
+            cur.execute("SELECT results FROM file_cache WHERE id = %s", (file_id,))
             row = cur.fetchone()
             if not row:
                 return None
@@ -261,9 +303,7 @@ class DB:
     # -----------------------
     # File task queue
     # -----------------------
-    def enqueue_file_task(
-        self, task_type: TaskType, files: List[str]
-    ) -> int:
+    def enqueue_file_task(self, task_type: TaskType, files: List[str]) -> int:
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
@@ -318,15 +358,9 @@ class DB:
             row = cur.fetchone()
             if not row:
                 return None
-            is_running = row[1]
-            if isinstance(is_running, memoryview):
-                is_running = bytes(is_running).decode()
-            elif isinstance(is_running, (bytes, bytearray)):
-                is_running = is_running.decode()
-            is_running_bool = str(is_running) in ("1", "t", "T", "True")
             return {
                 "id": int(row[0]),
-                "isRunning": is_running_bool,
+                "isRunning": self._bit_to_bool(row[1]),
                 "task_type": int(row[2]),
                 "files": row[3] or [],
             }
@@ -335,7 +369,6 @@ class DB:
         self, running: Optional[bool] = None, limit: int = 100, offset: int = 0
     ) -> List[Dict[str, Any]]:
         where = ""
-        params: Tuple[Any, ...] = ()
         if running is True:
             where = "WHERE isRunning = B'1'"
         elif running is False:
@@ -352,18 +385,12 @@ class DB:
                 (limit, offset),
             )
             rows = cur.fetchall()
-            out = []
+            out: List[Dict[str, Any]] = []
             for r in rows:
-                is_running = r[1]
-                if isinstance(is_running, memoryview):
-                    is_running = bytes(is_running).decode()
-                elif isinstance(is_running, (bytes, bytearray)):
-                    is_running = is_running.decode()
-                is_running_bool = str(is_running) in ("1", "t", "T", "True")
                 out.append(
                     {
                         "id": int(r[0]),
-                        "isRunning": is_running_bool,
+                        "isRunning": self._bit_to_bool(r[1]),
                         "task_type": int(r[2]),
                         "files": r[3] or [],
                     }
@@ -389,7 +416,5 @@ class DB:
 
     def reset_all_running_to_queued(self) -> int:
         with self._conn_cur() as (_, cur):
-            cur.execute(
-                "UPDATE file_task SET isRunning = B'0' WHERE isRunning = B'1'"
-            )
+            cur.execute("UPDATE file_task SET isRunning = B'0' WHERE isRunning = B'1'")
             return cur.rowcount

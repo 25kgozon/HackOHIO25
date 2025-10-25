@@ -1,0 +1,164 @@
+/* ---------- Page Layout ---------- */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    /* vertical center */
+    justify-content: center;
+    /* horizontal center */
+    padding: var(--s-6);
+    /* breathing room on mobile */
+    background:
+        radial-gradient(1200px 700px at 10% 10%, #c8e6ff 0%, transparent 60%),
+        radial-gradient(900px 600px at 90% 0%, #ffe3ff 0%, transparent 55%),
+        radial-gradient(1200px 700px at 50% 100%, #d1f7ff 0%, transparent 60%),
+        linear-gradient(180deg, #f6f7ff 0%, #eef2ff 100%);
+    font-family: var(--font-sans);
+}
+
+/* ---------- Top Bar ---------- */
+.login-topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: var(--glass-bg);
+    backdrop-filter: saturate(140%) blur(12px);
+    border-bottom: 1px solid var(--glass-brd);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    box-shadow: var(--shadow-1);
+}
+
+.login-topbar h2 {
+    margin: 0;
+    font-size: var(--h3);
+    background: conic-gradient(from 180deg at 50% 50%, #7dd3fc, #5b6cff, #8b5cf6, #d08bff, #7dd3fc);
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+/* ---------- Sidebar Hamburger Button ---------- */
+.menu-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1100;
+    background: var(--indigo-600);
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: var(--r-lg);
+    cursor: pointer;
+    font-size: 1.5rem;
+    box-shadow: 0 10px 30px rgba(91, 108, 255, .35);
+    transition: transform 0.15s ease, filter 0.2s ease;
+}
+
+.menu-btn:hover {
+    transform: translateY(-1px);
+    filter: saturate(120%);
+}
+
+
+
+/* ---------- Glass Card ---------- */
+.login-card {
+    max-width: 480px;
+    /* slightly wider */
+    width: 100%;
+    padding: var(--s-16);
+    /* more internal padding */
+    border-radius: 2rem;
+    /* extra rounded edges */
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-brd);
+    box-shadow: var(--shadow-1);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-6);
+    /* spacing between inputs and buttons */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+
+/* ---------- Form ---------- */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+}
+
+.login-form label {
+    font-weight: 600;
+}
+
+.input {
+    width: 95%;
+    padding: .8rem 1rem;
+    border-radius: var(--r-lg);
+    border: 1px solid color-mix(in oklab, var(--indigo-600) 12%, #cbd5e1);
+    background: rgba(255, 255, 255, .8);
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.input:focus {
+    border-color: var(--indigo-600);
+    box-shadow: var(--ring);
+}
+
+
+
+/* ---------- Button ---------- */
+.btn {
+    margin-top: var(--s-2);
+    --bg: linear-gradient(135deg, var(--indigo-600), var(--fuchsia-400) 70%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .85rem 1.15rem;
+    border-radius: 1rem;
+    border: 0;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--bg);
+    box-shadow: 0 10px 30px rgba(91, 108, 255, .35);
+    transition: transform .15s ease, filter .2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    filter: saturate(120%);
+}
+
+/* ---------- Header ---------- */
+.iridescent {
+    --grad: conic-gradient(from 180deg at 50% 50%, #7dd3fc, #5b6cff, #8b5cf6, #d08bff, #7dd3fc);
+    background: var(--grad);
+    -webkit-background-clip: text;
+    color: transparent;
+    font-size: var(--h2);
+    text-align: center;
+    margin-bottom: var(--s-4);
+}
+
+/* ---------- Footer ---------- */
+.login-footer {
+    margin-top: var(--s-4);
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.login-footer a {
+    color: var(--indigo-600);
+    font-weight: 600;
+}
+
+.login-footer a:hover {
+    color: var(--fuchsia-400);
+}

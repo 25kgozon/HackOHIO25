@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import "../styles/Sidebar.css";
 
 const Sidebar = ({ isOpen, onClose, isLoggedIn }) => {
-
+    const navigate = useNavigate();
     const handleNavigate = (path) => {
         console.log(path);
         onClose();
+        navigate(path);
     };
 
     const handleLogout = () => {

@@ -1,11 +1,11 @@
 # Backend
 FROM python:3.12-alpine
 
-WORKDIR /app/backend
-COPY backend/requirements.txt .
+WORKDIR /app/src/backend
+COPY src/backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir gunicorn
 
-COPY backend/ .
+COPY src/backend/ .
 
 CMD ["gunicorn", "-b", "0.0.0.0:8000", "serve:app"]

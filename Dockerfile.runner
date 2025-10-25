@@ -1,10 +1,10 @@
 # Backend
 FROM python:3.12-alpine
 
-WORKDIR /app/backend
-COPY backend/requirements.txt .
+WORKDIR /app/src/backend
+COPY src/backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY backend/ .
+COPY src/backend/ .
 
 CMD ["python", "runner.py"]

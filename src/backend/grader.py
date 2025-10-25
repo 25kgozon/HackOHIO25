@@ -2,7 +2,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
-class GradeScopeAI:
+class AIGrader:
     def __init__(self):
         # Load API keys from .env
         load_dotenv()
@@ -88,7 +88,7 @@ And give a short overall feedback summary at the end.
 
 
 if __name__ == "__main__":
-    grader = GradeScopeAI()
+    grader = AIGrader()
 
     # Paths to files
     teacher_file_path = "/Users/kgozon/Documents/midterm1_solution.pdf"

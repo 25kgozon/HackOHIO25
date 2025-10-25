@@ -91,8 +91,6 @@ poetry.lock
 # PEP 582; used by e.g. python-pdm
 __pypackages__/
 
-# dotenv
-.env
 
 # virtualenv
 venv/

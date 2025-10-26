@@ -3,10 +3,16 @@ from dotenv import load_dotenv
 # Load environment variables from .env
 load_dotenv()
 
+from uuid import UUID
 
 import os
 from flask import Flask, make_response, redirect, session, jsonify, request
 from authlib.integrations.flask_client import OAuth
+
+from db import DB, UserRole
+
+db = DB()
+
 
 
 app = Flask(__name__)
@@ -15,7 +21,7 @@ app.secret_key = os.getenv("flask_key", "supersecretkey")  # Replace with a secu
 # Configure OAuth
 oauth = OAuth(app)
 google = oauth.register(
-    name='google',
+    name='google',  
     client_id=os.getenv("client_id"),
     client_secret=os.getenv("client_secret"),
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
@@ -33,7 +39,7 @@ def url_for(path):
         url = url[:-1]
     url += path
 
-    return url
+    return url  
         
 
 
@@ -63,6 +69,12 @@ def authorize():
     user_info = google.userinfo()             # Fetch user info from Google
     session['user'] = user_info               # Store in session
     session['user']['role'] = session['role']
+    db.upsert_user(user_info["sub"], 
+                   user_info["email"],
+                   ({"teacher": UserRole.TEACHER, "student": UserRole.STUDENT})[session["role"]],
+                   None,
+                   user_info["name"], {}
+                   )
     return redirect(url_for("/handle_frontend_login"))
 
 @app.route('/api/logout')
@@ -82,6 +94,38 @@ def get_user():
     if not user:
         return jsonify({"logged_in": False}, 401)
     return jsonify({"logged_in": True, "user": user})
+
+@app.route("/api/classes")
+def get_classes():
+    user = session.get('user')
+    if not user:
+        return jsonify({"logged_in": False}, 401)
+    return jsonify(db.get_user_classes(user["sub"]))
+
+@app.route("/api/create_class", methods=["POST"])
+def create_class():
+    user = session.get('user')
+    if not user:
+        return jsonify({"logged_in": False}, 401)
+    if user["role"] != "teacher":
+        return jsonify({"error": "Not a teacher"}, 401)
+    data = request.get_json()
+
+    
+    classes = db.get_user(user["sub"])["classes"]
+    id = UUID(db.create_class(user["sub"], data["name"], data["desc"]))
+    classes.append(id)
+    db.update_user_classes(user["sub"], classes)
+    
+    return jsonify(":>")
+
+
+
+
+
+
+
+
 
 
 if __name__ == "__main__":

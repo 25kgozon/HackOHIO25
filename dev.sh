@@ -9,7 +9,6 @@ python src/backend/runner.py &
 RUNNER_PID=$!
 
 
-
 cleanup() {
     echo "Stopping backend (PID: $BACKEND_PID)..."
     kill "$BACKEND_PID" 2>/dev/null || true

@@ -196,9 +196,7 @@ def get_ass():
         return jsonify({"logged_in": False}, 401)
 
     data = request.get_json()
-    print(
-        db.get_class_assignments(data["class id"])
-    )
+
 
     return jsonify(
         db.get_class_assignments(data["class id"])

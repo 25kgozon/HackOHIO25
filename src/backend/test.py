@@ -58,12 +58,12 @@ def sim_event_ocr(fid : str):
 # sim_teacher_upload("admin", "/home/mitch/Documents/hack/HackOHIO25/src/backend/uploads/midterm1_solution.pdf")
 
 # sim_event_ocr("242f668d-8556-40b7-a0a6-7bb7a4bbc053")
-print(db.get_file_cache("242f668d-8556-40b7-a0a6-7bb7a4bbc053"))
+file_cache = (db.get_file_cache("242f668d-8556-40b7-a0a6-7bb7a4bbc053"))
 
 
 # print(generate_download_url("9f16967b-f48e-4e44-a682-fbf32fc5f6c7"))
 
-
+db.enqueue_text_task(TaskType.SUMMARIZE, [file_cache], "{}")
 
 
 

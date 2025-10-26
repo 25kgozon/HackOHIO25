@@ -110,6 +110,16 @@ CREATE TABLE IF NOT EXISTS text_task (
     texts TEXT[],
     files UUID[]
 );
+
+
+CREATE TABLE IF NOT EXISTS user_results (
+    id SERIAL PRIMARY KEY,
+
+    student VARCHAR(254),
+    UUID student_copy
+);
+
+
 """
 
 
@@ -276,6 +286,28 @@ class DB:
                 """,
                 (classid, ),
             )
+        
+    def add_user_result(self, userId: str, studentFile: UUID, response: str):
+        with self._conn_cur() as (_, cur):
+            cur.execute(
+                "INSERT INTO user_results (student, student_copy, response) VALUES (%s, %s, %s)",
+                (userId, studentFile, response),
+            )
+    def get_result_by_student_copy(self, studentFile: UUID):
+        with self._conn_cur() as (_, cur):
+            cur.execute(
+                "SELECT student, student_copy, response FROM user_results WHERE student_copy = %s",
+                (studentFile,),
+            )
+            row = cur.fetchone()
+            if row:
+                return {
+                    "student": row[0],
+                    "student_copy": row[1],
+                    "response": row[2],
+                }
+            return None
+
 
 
 

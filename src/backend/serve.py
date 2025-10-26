@@ -319,7 +319,12 @@ def upload_to_s3(path):
         
     if dbfile["file_role"] == FileRole.STUDENT_RESPONSE.value:
         ass = db.get_assignment(dbfile["file_assignment"])
-        print(ass)
+        if len(ass["files"]) == 0:
+            return jsonify("Assignment has not key"), 500
+        db.enqueue_text_task(TaskType.SUMMARIZE, [""], [
+            UUID(path), ass["files"][0]
+        ])
+
 
     
 

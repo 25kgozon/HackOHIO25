@@ -55,7 +55,7 @@ def run_file_event(db: DB, id: int, task_type: int, prompt_info: dict, files: li
     print(f" Completed file task {id} ({'teacher' if is_teacher else 'student'})")
 
 
-def run_text_event(db: DB, id: int, task_type: int, prompt_info: dict, texts: list[str], files: list[str]):
+def run_text_event(db: DB, id: int, task_type: int, prompt_info: dict, texts: list[str], files: list[UUID]):
     """
     Handles text-based events.
     Combines preloaded teacher + student text and runs grading.
@@ -81,7 +81,7 @@ def run_text_event(db: DB, id: int, task_type: int, prompt_info: dict, texts: li
     #  Cache the result and mark complete
     db.complete_text_task(id)
 
-    db.add_user_result(UUID(files[1]), result)
+    db.add_user_result(files[1], result)
 
 
 def main():

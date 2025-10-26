@@ -51,9 +51,7 @@ const MainPage = () => {
                 );
 
                 // Safely sort classes by title
-                coursesWithAssignments.sort((a, b) =>
-                    (a.title || "").localeCompare(b.title || "")
-                );
+                coursesWithAssignments.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
                 setCourses(coursesWithAssignments);
             } catch (err) {
@@ -89,8 +87,7 @@ const MainPage = () => {
                         {courses.map((course) => (
                             <div key={course.id} className="course-section">
                                 {/* Course title */}
-                                <h3 className="course-title">{course.title}</h3>
-
+                                <h3 className="course-title">{course.name}</h3>
                                 {/* Assignments for this course */}
                                 <div className="assignment-cards">
                                     {course.upcoming.map((a) => (
@@ -99,7 +96,7 @@ const MainPage = () => {
                                             className="assignment-card upcoming"
                                             onClick={() =>
                                                 navigate(`/course/${course.id}/assignment/${a.title}`, {
-                                                    state: { courseTitle: course.title, assignmentDetails: a },
+                                                    state: { courseTitle: course.name, assignmentDetails: a },
                                                 })
                                             }
                                         >

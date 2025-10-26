@@ -1,34 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useUser } from "../context/UserContext";
 import "../styles/SubmissionsPage.css";
 
-// Sample submitted assignments data
-const submittedAssignments = [
-    {
-        courseId: 1,
-        courseTitle: "Calculus 101",
-        submissions: [
-            { id: 1, title: "Homework 1", student: "Alice", submittedOn: "Oct 15", grade: "95%", comments: ["Good work!", "Check question 2"] },
-            { id: 2, title: "Quiz 1", student: "Bob", submittedOn: "Oct 17", grade: "88%", comments: ["Review question 3"] },
-        ],
-    },
-    {
-        courseId: 2,
-        courseTitle: "Physics 201",
-        submissions: [
-            { id: 3, title: "Lab Report 0", student: "Charlie", submittedOn: "Oct 14", grade: "100%", comments: [] },
-            { id: 4, title: "Homework 1", student: "David", submittedOn: "Oct 16", grade: "92%", comments: ["Well done!"] },
-        ],
-    },
-];
-
 const SubmissionsPage = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [activeSection, setActiveSection] = useState("Submissions");
+    const [assignmentsByCourse, setAssignmentsByCourse] = useState([]);
+    const { user } = useUser();
     const navigate = useNavigate();
-    const { user } = useUser(); // ✅ get logged-in user
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
     const handleNavigate = (section) => {
@@ -36,19 +17,46 @@ const SubmissionsPage = () => {
         setIsSidebarOpen(false);
     };
 
-    // Determine if the user is a student
-    const isStudent = user?.role === "student";
+    // Fetch assignments grouped by course
+    useEffect(() => {
+        if (!user) return;
 
-    // If student, filter + replace names with user's own name
-    const displayedAssignments = isStudent
-        ? submittedAssignments.map(course => ({
-            ...course,
-            submissions: course.submissions.map(sub => ({
-                ...sub,
-                student: user.name, // replace all names with logged-in student's name
-            })),
-        }))
-        : submittedAssignments;
+        const fetchAssignments = async () => {
+            try {
+                const res = await fetch("/api/classes", { credentials: "include" });
+                if (!res.ok) throw new Error("Failed to fetch classes");
+                const classes = await res.json();
+
+                const coursesWithAssignments = await Promise.all(
+                    classes.map(async (cls) => {
+                        const assignmentRes = await fetch("/api/get_class_assignments", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ "class id": cls.id }),
+                        });
+                        if (!assignmentRes.ok) throw new Error("Failed to fetch assignments");
+                        const assignments = await assignmentRes.json();
+                        return {
+                            courseId: cls.id,
+                            courseTitle: cls.name || cls.title || "Untitled Course",
+                            assignments: assignments.map((a) => ({
+                                id: a.id,
+                                title: a.name,
+                                due: a.attrs?.due || "TBD",
+                                grade: a.grade || null,
+                            })),
+                        };
+                    })
+                );
+
+                setAssignmentsByCourse(coursesWithAssignments);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        fetchAssignments();
+    }, [user]);
 
     return (
         <div className="main-page">
@@ -67,33 +75,35 @@ const SubmissionsPage = () => {
                 <h2 className="page-title">{activeSection}</h2>
 
                 <div className="submissions-section">
-                    {displayedAssignments.map((course) => (
-                        <div key={course.courseId} className="course-section">
-                            <h3 className="course-title">{course.courseTitle}</h3>
-                            <div className="submission-cards">
-                                {course.submissions.map((sub) => (
-                                    <div key={sub.id} className="submission-card">
-                                        <div>
-                                            <strong>{sub.title}</strong> - {sub.student}
+                    {assignmentsByCourse.length === 0 ? (
+                        <p>No assignments found.</p>
+                    ) : (
+                        assignmentsByCourse.map((course) => (
+                            <div key={course.courseId} className="course-section">
+                                <h3 className="course-title">{course.courseTitle}</h3>
+                                <div className="submission-cards">
+                                    {course.assignments.map((ass) => (
+                                        <div key={ass.id} className="submission-card">
+                                            <div>
+                                                <strong>{ass.title}</strong>
+                                            </div>
+                                            <div>Due: {ass.due} | Grade: {ass.grade || "TBD"}</div>
+                                            <button
+                                                className="btn"
+                                                onClick={() =>
+                                                    navigate(`/submissions/${ass.id}`, {
+                                                        state: { assignment: ass, courseTitle: course.courseTitle }
+                                                    })
+                                                }
+                                            >
+                                                View Details
+                                            </button>
                                         </div>
-                                        <div>
-                                            Submitted: {sub.submittedOn} | Grade: {sub.grade}
-                                        </div>
-                                        <button
-                                            className="btn"
-                                            onClick={() =>
-                                                navigate(`/submissions/${sub.id}`, {
-                                                    state: { submission: sub, courseTitle: course.courseTitle }
-                                                })
-                                            }
-                                        >
-                                            View Details
-                                        </button>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </main>
         </div>

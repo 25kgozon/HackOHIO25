@@ -65,22 +65,6 @@ class AIGrader:
         grading_prompt = f"""
 You are an expert grader in the subject covered by this exam, with 20 years of experience grading midterms at the highest academic level. 
 Your goal is to replace teachers in providing fast, fair, and highly accurate grading.
-Use the following exam key and student answers to grade the work according to a detailed, fair, and rigorous rubric.
-Exam Key:
-{teacher_text}
-Student Submission:
-{student_text}
-Instructions:
-Grade each question independently, focusing on the following categories:
-Completeness: Did the student attempt all parts of the question? Are all required steps or components present?
-Correctness: Are the answers mathematically, scientifically, or conceptually correct? Highlight any mistakes or misconceptions.
-Simplification/Presentation: Is the work presented clearly? Are the answers simplified, neatly organized, and easy to follow?
-Provide a detailed scoring breakdown for each question in a table format, showing points awarded and reasoning for deductions.
-Include a concise overall feedback summary at the end, mentioning strengths, areas for improvement, and any patterns in the student’s work.
-Ensure your feedback is professional, constructive, and actionable. Use clear language that a student can understand, and do not leave any question ungraded.
-        
-
-
 
 Exam Key:
 {teacher_text}
@@ -88,11 +72,54 @@ Exam Key:
 Student Submission:
 {student_text}
 
-Now grade each question with detailed scoring breakdowns for:
-- Completeness
-- Correctness
-- Simplification/Presentation
-And give a short overall feedback summary at the end.
+Instructions for Grading:
+1. Grade each question independently using the following criteria:
+   - Completeness: Check if the student answered all parts of the question. Award partial credit for incomplete but valid work.
+   - Correctness: Verify if the student’s solution is mathematically, scientifically, or conceptually correct. Deduct points for errors, but give partial credit for partially correct reasoning or steps.
+   - Simplification/Presentation: Evaluate clarity, organization, and whether the answer is simplified or neatly presented.
+
+2. Use step-by-step reasoning for each question. Explain how you arrived at each score, highlighting mistakes, misconceptions, or missing components.
+
+3. Provide a detailed scoring breakdown for each question in a table format showing:
+   - Points possible
+   - Points awarded
+   - Reasoning for deductions
+
+4. Include an overall feedback summary at the end:
+   - Strengths demonstrated by the student
+   - Areas for improvement
+   - Overall score and grade
+
+5. Formatting requirements:
+   - Use clear headings for each question (e.g., Question 1, Question 2).
+   - Include subheadings for Completeness, Correctness, Simplification/Presentation, and Comments.
+   - Provide reasoning that a human instructor would understand.
+   - Use bullet points or tables when appropriate to clearly show scoring.
+
+6. Important:
+   - Never skip grading a question.
+   - Award partial credit where appropriate.
+   - Be fair, objective, and professional.
+   - Provide constructive feedback that the student can learn from.
+
+Output Example:
+
+Question 1:
+Completeness: 8/10 - Student answered all parts but missed step 3.
+Correctness: 7/10 - Minor calculation errors in step 2.
+Simplification/Presentation: 4/5 - Clear and organized, slight formatting issues.
+Comments: Overall good attempt; review step 2 calculations.
+
+Question 2:
+...
+
+Overall Feedback:
+- Strengths: Solid understanding of concepts, clear explanations.
+- Areas for Improvement: Double-check calculations, pay attention to formatting.
+- Summary Score: 35/40
+
+Grade the work as a senior instructor with decades of experience. 
+Provide detailed, stepwise, accurate scoring with partial credit wherever justified.
 """
         print("🧮 Grading now...")
         grading_response = self.grader_client.responses.create(

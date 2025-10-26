@@ -16,6 +16,18 @@ const ProfilePage = () => {
         return null;
     }
 
+    const handleLogout = async () => {
+        try {
+
+            logout();
+            location.href = "/api/logout";
+
+        } catch (error) {
+            console.error("Logout failed:", error);
+            alert("Error logging out. Please try again.");
+        }
+    };
+
     return (
         <div className="profile-page">
             {/* Header */}
@@ -32,7 +44,7 @@ const ProfilePage = () => {
                     <strong>Role:</strong> {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                 </p>
 
-                <button className="btn logout-btn" onClick={logout}>Logout</button>
+                <button className="btn logout-btn" onClick={handleLogout}>Logout</button>
             </main>
         </div>
     );

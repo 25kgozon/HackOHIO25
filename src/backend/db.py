@@ -290,13 +290,13 @@ class DB:
     def add_user_result(self, studentFile: UUID, response: str):
         with self._conn_cur() as (_, cur):
             cur.execute(
-                "INSERT INTO user_results (student_copy, response) VALUES (%s, %s)",
+                "INSERT INTO user_results (student_copy, result) VALUES (%s, %s)",
                 (studentFile, response),
             )
     def get_result_by_student_copy(self, studentFile: UUID):
         with self._conn_cur() as (_, cur):
             cur.execute(
-                "SELECT student_copy, response FROM user_results WHERE student_copy = %s",
+                "SELECT student_copy, result FROM user_results WHERE student_copy = %s",
                 (studentFile,),
             )
             row = cur.fetchone()

@@ -374,6 +374,17 @@ class DB:
                 "file_role": row[3],
                 "context": ctx,
             }
+    def join_class_by_code(self, user_id : str, code : int):
+        with self._conn_cur() as (_, cur):
+            cur.execute("SELECT id FROM classes WHERE joinCode=%s LIMIT 1", (code, ))
+            row = cur.fetchone()
+            if not row:
+                return None
+            print(row)
+            cur.execute("UPDATE users SET classes = classes || %s WHERE openid=%s", (row[0], user_id))
+
+            return row[0]
+
 
     def delete_file(self, file_id: str) -> bool:
         with self._conn_cur() as (_, cur):

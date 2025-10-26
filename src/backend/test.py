@@ -75,19 +75,7 @@ if __name__ == "__main__":
     sim_ocr_task(teacher_fid)
     sim_ocr_task(student_fid)
 
-    print("\n OCR tasks queued. Now run:")
-    print("   python runner.py")
-    print("to process both files and cache their text.\n")
-
-    # STEP 3: Once OCR tasks complete (you’ll see in runner output),
-    # enqueue the grading task:
-    print("After OCR finishes, run this command:")
-    print(f"   db.enqueue_text_task(TaskType.SUMMARIZE, ['{student_fid}', '{teacher_fid}'], '{{}}')")
-
-
-
-
-
+    print(teacher_fid, student_fid)
 
 
 

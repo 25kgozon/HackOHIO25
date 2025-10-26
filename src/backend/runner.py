@@ -1,5 +1,7 @@
 from dotenv import load_dotenv
+
 load_dotenv()
+from s3 import download_by_key
 
 from db import *
 from concurrent.futures import ThreadPoolExecutor
@@ -11,8 +13,8 @@ try:
 except ImportError:
     from .grader import AIGrader
 
-WORKERS = 1
-
+WORKERS = 4
+from tempfile import NamedTemporaryFile
 
 def run_file_event(db: DB, id: int, task_type: int, prompt_info: dict, files: list[str]):
     """
@@ -33,17 +35,22 @@ def run_file_event(db: DB, id: int, task_type: int, prompt_info: dict, files: li
 
     #  Get preloaded text from cache instead of reading a file
 
-    # Pass raw text directly into the grader
-    if is_teacher:
-        out = grader.read_teacher_text(cached_text)
-    elif is_student:
-        out = grader.read_student_text(cached_text)
-    else:
-        raise ValueError(f"Unknown file role for {initial}")
+    with NamedTemporaryFile(suffix=".pdf") as tmp:
+        tmp=tmp.name
+        download_by_key(initial, tmp)
+        print("DOING THE OCR")
 
-    #  Update database state
-    db.complete_file_task(id)
-    db.set_file_cache(initial, out)
+        # Pass raw text directly into the grader
+        if is_teacher:
+            out = grader.read_teacher_file(tmp)
+        elif is_student:
+            out = grader.read_student_file(tmp)
+        else:
+            raise ValueError(f"Unknown file role for {initial}")
+
+        #  Update database state
+        db.complete_file_task(id)
+        db.set_file_cache(initial, out)
 
     print(f" Completed file task {id} ({'teacher' if is_teacher else 'student'})")
 
@@ -69,13 +76,12 @@ def run_text_event(db: DB, id: int, task_type: int, prompt_info: dict, texts: li
         return
 
     # Run the grading logic
-    result = grader.grade(student_text, teacher_text, context_files_text)
+    result = grader.grade_submission(student_text, teacher_text)
 
     #  Cache the result and mark complete
     db.complete_text_task(id)
-    db.set_file_cache(id, result)
+    print(result)
 
-    print(f" Completed text task {id}")
 
 
 def main():
@@ -83,27 +89,29 @@ def main():
     print("Starting event runner")
 
     with ThreadPoolExecutor(max_workers=WORKERS) as exec:
-        file_event = db.dequeue_file_task()
-        text_event = db.dequeue_text_task()
+        while True:
+            file_event = db.dequeue_file_task()
+            text_event = db.dequeue_text_task()
 
-        futures = []
+            futures = []
 
-        if file_event is not None:
-            futures.append(exec.submit(run_file_event, db, **file_event))
-        else:
-            print("No file tasks in queue")
+            if file_event is not None:
+                futures.append(exec.submit(run_file_event, db, **file_event))
+            else:
+                print("No file tasks in queue")
 
-        if text_event is not None:
-            futures.append(exec.submit(run_text_event, db, **text_event))
-        else:
-            print("No text tasks in queue")
+            if text_event is not None:
+                futures.append(exec.submit(run_text_event, db, **text_event))
+            else:
+                print("No text tasks in queue")
 
-        # Wait for all tasks to finish
-        for fut in futures:
-            while fut.running():
-                time.sleep(1)
-            if fut.exception():
-                traceback.print_exception(fut.exception())
+            # Wait for all tasks to finish
+            for fut in futures:
+                while fut.running():
+                    time.sleep(1)
+                if fut.exception():
+                    traceback.print_exception(fut.exception())
+            time.sleep(1)
 
 
 if __name__ == "__main__":

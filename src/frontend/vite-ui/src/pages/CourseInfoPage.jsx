@@ -42,14 +42,13 @@ const CourseInfoPage = () => {
 
             const data = await res.json();
 
-            // Map backend fields to frontend-friendly names
             const mappedAssignments = data.map((a) => ({
                 id: a.id,
                 title: a.name,
                 description: a.description,
                 attrs: a.attrs,
-                due: a.due || "TBD", // optional, backend can add later
-                graded: a.graded || false, // optional, backend can add later
+                due: a.attrs?.due || "TBD", // <-- read from attrs
+                graded: a.graded || false,
             }));
 
             setAssignments({
@@ -80,15 +79,23 @@ const CourseInfoPage = () => {
                     class_id: id,
                     "ass name": newAssignmentName,
                     "ass desc": "",
-                    "ass attrs": {},
+                    "ass attrs": {
+                        due: newAssignmentDue || "TBD", // <-- store due date here
+                    },
+                    "ass grade info": {},
                     context: "",
                 }),
             });
 
             if (!res.ok) throw new Error("Failed to create assignment");
 
-            await res.json();
-            fetchAssignments();
+            const data = await res.json();
+            console.log("Created assignment:", data);
+
+            // Refresh assignments list
+            await fetchAssignments();
+
+            // Reset modal fields
             setNewAssignmentName("");
             setNewAssignmentDue("");
             setNewAssignmentFile(null);
@@ -158,11 +165,14 @@ const CourseInfoPage = () => {
                     <div className="assignment-cards">
                         {assignments.upcoming.map((a) => (
                             <div key={a.id} className="assignment-card upcoming">
-                                <div className="assignment-info" onClick={() =>
-                                    navigate(`/course/${id}/assignment/${a.title}`, {
-                                        state: { courseTitle, assignmentDetails: a },
-                                    })
-                                }>
+                                <div
+                                    className="assignment-info"
+                                    onClick={() =>
+                                        navigate(`/course/${id}/assignment/${a.title}`, {
+                                            state: { courseTitle, assignmentDetails: a },
+                                        })
+                                    }
+                                >
                                     <strong>{a.title}</strong>
                                     <p>Due: {a.due}</p>
                                 </div>

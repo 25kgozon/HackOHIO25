@@ -1,4 +1,4 @@
-# 📚 Gradescope Reimagined: AI-Powered Grading System
+# 📚 grAIscope -- Gradescope Reimagined: AI-Powered Grading System
 
 **Project Overview**  
 Gradescope Reimagined is a revolutionary AI-powered grading platform designed to transform the way educators assess student work. In today’s fast-paced educational environment, teachers are often overwhelmed by the sheer volume of exams and assignments, spending countless hours on grading rather than focusing on instruction and student engagement. Meanwhile, students are left waiting anxiously for their results, sometimes enduring weeks before receiving meaningful feedback.

@@ -32,7 +32,12 @@ const AssignmentPage = () => {
 
         try {
             // Step 1: Request new student file record
-            const createRes = await fetch("/api/create_student_file", { method: "POST" });
+            const createRes = await fetch("/api/create_student_file", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ assignment: id })
+            });
+
             if (!createRes.ok) throw new Error("Failed to create student file record");
             const { id: fileId } = await createRes.json();
 
@@ -50,17 +55,16 @@ const AssignmentPage = () => {
 
             console.log("Uploaded student file URL:", data.url);
 
-            // Step 3: Create graded assignment object
+            // Step 3: Update assignment object for navigation
             const gradedAssignment = {
                 ...assignmentDetails,
                 title: assignmentTitle,
                 graded: true,
                 submittedUrl: data.url,
-                clickable: false, // makes it unclickable in CoursePage
+                clickable: false,
             };
 
             alert("Assignment submitted! Returning to class page...");
-
             navigate(`/course/${id}`, {
                 state: {
                     courseTitle,
@@ -91,7 +95,12 @@ const AssignmentPage = () => {
         if (!answerKeyFile) return alert("No file selected.");
 
         try {
-            const createRes = await fetch("/api/create_teacher_file", { method: "POST" });
+            const createRes = await fetch("/api/create_teacher_file", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ assignment: id })
+            });
+
             if (!createRes.ok) throw new Error("Failed to create teacher file record");
             const { id: fileId } = await createRes.json();
 
@@ -139,7 +148,6 @@ const AssignmentPage = () => {
                 <h2 className="course-title iridescent">{courseTitle}</h2>
                 <h3 className="assignment-title">{assignmentTitle}</h3>
 
-                {/* Assignment Info */}
                 <div className="assignment-details">
                     {assignmentDetails ? (
                         <>
@@ -159,7 +167,6 @@ const AssignmentPage = () => {
                     )}
                 </div>
 
-                {/* Student Upload */}
                 {!isTeacher && (
                     <div className="upload-section">
                         <h4>Submit Your Assignment:</h4>
@@ -180,7 +187,6 @@ const AssignmentPage = () => {
                     </div>
                 )}
 
-                {/* Teacher Tools */}
                 {isTeacher && (
                     <div className="upload-section">
                         <h4>Teacher Tools:</h4>

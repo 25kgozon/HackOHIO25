@@ -9,6 +9,8 @@ const CoursesPage = () => {
     const { user } = useUser();
     const isTeacher = user?.role === "teacher";
 
+    const [newClassName, setNewClassName] = useState("");
+    const [newClassDesc, setNewClassDesc] = useState("");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [courses, setCourses] = useState([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -68,8 +70,7 @@ const CoursesPage = () => {
 
     // ---------- Create Class (Teacher) ----------
     const createClass = async () => {
-        const randomName = classNames[Math.floor(Math.random() * classNames.length)];
-        const randomInstructor = instructorNames[Math.floor(Math.random() * instructorNames.length)];
+        if (!newClassName.trim()) return alert("Please enter a class name.");
 
         try {
             const res = await fetch("/api/create_class", {
@@ -77,23 +78,25 @@ const CoursesPage = () => {
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
                 body: JSON.stringify({
-                    name: randomName,
-                    desc: `${randomName} - A practical course for students.`,
-                    instructor: randomInstructor,
+                    name: newClassName,
+                    desc: newClassDesc,
                 }),
             });
 
             if (!res.ok) throw new Error("Failed to create class");
 
             const data = await res.json();
-            alert(`Class created! (${randomName} by ${randomInstructor})`);
-            fetchClasses();
+            alert(`Class created! (${newClassName})`);
+            setNewClassName("");
+            setNewClassDesc("");
             setShowCreateModal(false);
+            fetchClasses(); // Refresh class list
         } catch (err) {
             console.error("Error creating class:", err);
             alert("Failed to create class");
         }
     };
+
 
     // ---------- Simulated Join Class (Student) ----------
     const joinRandomClass = () => {
@@ -164,8 +167,18 @@ const CoursesPage = () => {
                 {showCreateModal && (
                     <div className="modal-overlay">
                         <div className="modal-content fade-in">
-                            <h3>Create Random Class</h3>
-                            <p>A random class name and instructor will be assigned automatically.</p>
+                            <h3>Create Class</h3>
+                            <input
+                                type="text"
+                                placeholder="Class Name"
+                                value={newClassName}
+                                onChange={(e) => setNewClassName(e.target.value)}
+                            />
+                            <textarea
+                                placeholder="Class Description"
+                                value={newClassDesc}
+                                onChange={(e) => setNewClassDesc(e.target.value)}
+                            />
                             <div className="modal-buttons">
                                 <button className="btn" onClick={createClass}>Create</button>
                                 <button className="btn" onClick={() => setShowCreateModal(false)}>Cancel</button>
@@ -173,6 +186,7 @@ const CoursesPage = () => {
                         </div>
                     </div>
                 )}
+
 
                 {/* Join Random Class Modal */}
                 {showJoinModal && (

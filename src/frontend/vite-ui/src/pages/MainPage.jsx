@@ -1,40 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/MainPage.css";
 import Sidebar from "../components/Sidebar";
-
-// Sample courses data
-const sampleCourses = [
-    {
-        id: 1,
-        title: "Calculus 101",
-        upcoming: [
-            { title: "Homework 3", due: "Oct 30" },
-            { title: "Quiz 2", due: "Nov 2" },
-        ],
-    },
-    {
-        id: 2,
-        title: "Physics 201",
-        upcoming: [
-            { title: "Lab Report 1", due: "Oct 29" },
-            { title: "Midterm Prep", due: "Nov 5" },
-        ],
-    },
-    {
-        id: 3,
-        title: "Computer Science 101",
-        upcoming: [
-            { title: "Project Proposal", due: "Nov 3" },
-            { title: "Homework 2", due: "Nov 7" },
-        ],
-    },
-];
+import { useUser } from "../context/UserContext";
 
 const MainPage = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [activeSection, setActiveSection] = useState("Dashboard"); // Track section
+    const [activeSection, setActiveSection] = useState("Dashboard");
+    const [courses, setCourses] = useState([]);
     const navigate = useNavigate();
+    const { user } = useUser();
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -42,6 +17,53 @@ const MainPage = () => {
         setActiveSection(section);
         setIsSidebarOpen(false);
     };
+
+    // Fetch classes and assignments
+    useEffect(() => {
+        if (!user) return;
+
+        const fetchCourses = async () => {
+            try {
+                const res = await fetch("/api/classes");
+                if (!res.ok) throw new Error("Failed to fetch classes");
+                let classes = await res.json();
+                console.log("Classes fetched:", classes); // <-- check data
+
+                const coursesWithAssignments = await Promise.all(
+                    classes.map(async (cls) => {
+                        const assignmentRes = await fetch("/api/get_class_assignments", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ "class id": cls.id }),
+                        });
+                        if (!assignmentRes.ok) throw new Error("Failed to fetch assignments");
+                        const assignments = await assignmentRes.json();
+                        return {
+                            ...cls,
+                            upcoming: assignments.map((a) => ({
+                                title: a.name,
+                                due: a.due || "N/A",
+                                grade: a.grade || null,
+                                id: a.id,
+                            })),
+                        };
+                    })
+                );
+
+                // Safely sort classes by title
+                coursesWithAssignments.sort((a, b) =>
+                    (a.title || "").localeCompare(b.title || "")
+                );
+
+                setCourses(coursesWithAssignments);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        fetchCourses();
+    }, [user]);
+
 
     return (
         <div className="main-page">
@@ -64,13 +86,16 @@ const MainPage = () => {
 
                 {activeSection === "Dashboard" && (
                     <div className="dashboard-section">
-                        {sampleCourses.map((course) => (
+                        {courses.map((course) => (
                             <div key={course.id} className="course-section">
+                                {/* Course title */}
                                 <h3 className="course-title">{course.title}</h3>
+
+                                {/* Assignments for this course */}
                                 <div className="assignment-cards">
-                                    {course.upcoming.map((a, idx) => (
+                                    {course.upcoming.map((a) => (
                                         <div
-                                            key={idx}
+                                            key={a.id}
                                             className="assignment-card upcoming"
                                             onClick={() =>
                                                 navigate(`/course/${course.id}/assignment/${a.title}`, {
@@ -80,6 +105,7 @@ const MainPage = () => {
                                         >
                                             <strong>{a.title}</strong>
                                             <p>Due: {a.due}</p>
+                                            {a.grade && <p>Grade: {a.grade}</p>}
                                         </div>
                                     ))}
                                 </div>
@@ -88,7 +114,7 @@ const MainPage = () => {
                     </div>
                 )}
 
-                {activeSection !== "Upcoming Assignments" && (
+                {activeSection !== "Dashboard" && (
                     <div className={`placeholder-section ${activeSection.toLowerCase()}`}>
                         <p>📚 Placeholder content for {activeSection}.</p>
                     </div>

@@ -25,6 +25,27 @@ const CourseInfoPage = () => {
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
+    const deleteCourse = async () => {
+        if (!window.confirm("Are you sure you want to delete this course? This cannot be undone.")) return;
+
+        try {
+            const res = await fetch("/api/delete_class", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ id }),
+            });
+            if (!res.ok) throw new Error("Failed to delete course");
+            await res.json();
+            alert("Course deleted successfully!");
+            navigate("/"); // Go back to dashboard/main page
+        } catch (err) {
+            console.error(err);
+            alert("Failed to delete course");
+        }
+    };
+
+
     // ---------------------------
     // Fetch assignments
     // ---------------------------
@@ -172,8 +193,10 @@ const CourseInfoPage = () => {
                     {isTeacher && (
                         <div className="course-actions">
                             <button className="btn" onClick={() => setShowCreateModal(true)}>Add Assignment</button>
+                            <button className="btn danger" onClick={deleteCourse}>Delete Course</button>
                         </div>
                     )}
+
                 </div>
 
                 {/* Assignments */}

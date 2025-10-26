@@ -9,16 +9,16 @@ const submittedAssignments = [
         courseId: 1,
         courseTitle: "Calculus 101",
         submissions: [
-            { title: "Homework 1", student: "Alice", submittedOn: "Oct 15", grade: "95%", comments: ["Good work!", "Check question 2"] },
-            { title: "Quiz 1", student: "Bob", submittedOn: "Oct 17", grade: "88%", comments: ["Review question 3"] },
+            { id: 1, title: "Homework 1", student: "Alice", submittedOn: "Oct 15", grade: "95%", comments: ["Good work!", "Check question 2"] },
+            { id: 2, title: "Quiz 1", student: "Bob", submittedOn: "Oct 17", grade: "88%", comments: ["Review question 3"] },
         ],
     },
     {
         courseId: 2,
         courseTitle: "Physics 201",
         submissions: [
-            { title: "Lab Report 0", student: "Charlie", submittedOn: "Oct 14", grade: "100%", comments: [] },
-            { title: "Homework 1", student: "David", submittedOn: "Oct 16", grade: "92%", comments: ["Well done!"] },
+            { id: 3, title: "Lab Report 0", student: "Charlie", submittedOn: "Oct 14", grade: "100%", comments: [] },
+            { id: 4, title: "Homework 1", student: "David", submittedOn: "Oct 16", grade: "92%", comments: ["Well done!"] },
         ],
     },
 ];
@@ -36,20 +36,17 @@ const SubmissionsPage = () => {
 
     return (
         <div className="main-page">
-            {/* Header */}
             <header className="main-header">
                 <button className="menu-btn" onClick={toggleSidebar}>☰</button>
                 <h1 className="title-text">GrAIscope | {activeSection}</h1>
             </header>
 
-            {/* Sidebar */}
             <Sidebar
                 isOpen={isSidebarOpen}
                 onClose={() => setIsSidebarOpen(false)}
                 onNavigate={handleNavigate}
             />
 
-            {/* Main Content */}
             <main className="main-content fade-in">
                 <h2 className="page-title">{activeSection}</h2>
 
@@ -58,16 +55,10 @@ const SubmissionsPage = () => {
                         <div key={course.courseId} className="course-section">
                             <h3 className="course-title">{course.courseTitle}</h3>
                             <div className="submission-cards">
-                                {course.submissions.map((sub, idx) => (
+                                {course.submissions.map((sub) => (
                                     <div
-                                        key={idx}
+                                        key={sub.id}
                                         className="submission-card"
-                                        onClick={() =>
-                                            navigate(`/submission/${sub.id}`, {
-                                                state: { submission: sub, courseTitle: course.courseTitle }
-                                            })
-
-                                        }
                                     >
                                         <div>
                                             <strong>{sub.title}</strong> - {sub.student}
@@ -75,6 +66,16 @@ const SubmissionsPage = () => {
                                         <div>
                                             Submitted: {sub.submittedOn} | Grade: {sub.grade}
                                         </div>
+                                        <button
+                                            className="btn"
+                                            onClick={() =>
+                                                navigate(`/submissions/${sub.id}`, {
+                                                    state: { submission: sub, courseTitle: course.courseTitle }
+                                                })
+                                            }
+                                        >
+                                            View Details
+                                        </button>
                                     </div>
                                 ))}
                             </div>

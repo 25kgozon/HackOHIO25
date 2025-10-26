@@ -304,8 +304,15 @@ def upload_to_s3(path):
 
     db.enqueue_file_task(TaskType.OCR, [path], "{}")
     
+    if dbfile["file_role"] == FileRole.TEACHER_KEY.value:
+        db.set_file_assignments(
+            dbfile["file_assignment"], [UUID(path)]
+        )
+        
     if dbfile["file_role"] == FileRole.STUDENT_RESPONSE.value:
-        db.enqueue_text_task(TaskType.SUMMARIZE, [])
+        ass = db.get_assignment(dbfile["file_assignment"])
+        print(ass)
+
     
 
     return jsonify({"message": "Upload successful", "url": generate_download_url(path)})

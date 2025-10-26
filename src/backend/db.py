@@ -305,7 +305,7 @@ class DB:
     def create_class(self, 
             owner_user: str,
             name : str, 
-            description : str):
+        description : str):
         with self._conn_cur() as (_, cur):
 
             for _ in range(99999999):
@@ -386,11 +386,37 @@ class DB:
                     }
                 )
             return out
+
+    def get_assignment(self, assignment_id: UUID) -> Optional[Dict[str, Any]]:
+        with self._conn_cur() as (_, cur):
+            cur.execute(
+                """
+                SELECT id, name, description, attrs, gradeInfo, context, files
+                FROM assignments
+                WHERE id = %s
+                """,
+                (assignment_id,),
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+
+            return {
+                "id": str(row[0]),
+                "name": row[1],
+                "description": row[2],
+                "attrs": self._maybe_json_load(row[3]),
+                "gradeInfo": self._maybe_json_load(row[4]),
+                "context": self._maybe_json_load(row[5]),
+                "files": row[6]
+            }
+
+
     def get_file(self, file_id: str) -> Optional[Dict[str, Any]]:
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
-                SELECT id, posted_user, file_name, file_role, context
+                SELECT id, posted_user, file_name, file_role, file_assignment, context
                 FROM files
                 WHERE id = %s
                 """,
@@ -399,13 +425,14 @@ class DB:
             row = cur.fetchone()
             if not row:
                 return None
-            ctx = self._maybe_json_load(row[3])
+
             return {
                 "id": str(row[0]),
                 "posted_user": str(row[1]) if row[1] else None,
                 "file_name": str(row[2]),
                 "file_role": row[3],
-                "context": ctx,
+                "file_assignment": row[4],
+                "context": self._maybe_json_load(row[5]),
             }
     def join_class_by_code(self, user_id : str, code : int):
         with self._conn_cur() as (_, cur):
@@ -817,6 +844,15 @@ class DB:
 
         with self._conn_cur() as (_, cur):
             cur.execute(query, tuple(params))
+
+    def add_file_to_assignment(self, assignment_id: UUID, file : UUID):
+        with self._conn_cur() as (_, cur):
+            cur.execute("""UPDATE assignments SET files = files || %s WHERE id=%s""", (file, assignment_id))
+    def set_file_assignments(self, assignment_id: UUID, files : list[UUID]):
+        with self._conn_cur() as (_, cur):
+            cur.execute("""UPDATE assignments SET files = %s WHERE id=%s""", (files , assignment_id))
+
+
 
     def complete_text_task(self, task_id: int) -> bool:
         with self._conn_cur() as (_, cur):

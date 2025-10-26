@@ -1,55 +1,84 @@
-# 📚 GrAIdscope -- Gradescope Reimagined: An AI-Powered Grading System
+# 📚 GrAIdscope — Gradescope Reimagined: An AI-Powered Grading System
 
-**Project Overview**  
-GrAIdscope is a revolutionary AI-powered grading platform designed to transform the way educators assess student work. In today’s fast-paced educational environment, teachers are often overwhelmed by the sheer volume of exams and assignments, spending countless hours on grading rather than focusing on instruction and student engagement. Meanwhile, students are left waiting anxiously for their results, sometimes enduring weeks before receiving meaningful feedback.
-GrAIdscope addresses these challenges head-on by automating the evaluation of free-response exams with unparalleled speed and precision. Teachers simply upload their answer key PDF, and students submit their completed exams through our secure platform. Leveraging advanced AI algorithms, our system analyzes each student’s submission, compares it against the teacher’s key, and generates comprehensive grades along with detailed, actionable feedback—all within minutes.
-This intelligent platform not only dramatically reduces grading time, but it also ensures consistency and fairness across every submission. Educators can trust that every response is evaluated with the same rigorous standard, eliminating human error and subjective bias. For students, the result is immediate, transparent feedback that supports learning and improvement, fostering a more engaging and responsive educational experience.
-For investors, GrAIdscope represents a cutting-edge opportunity at the intersection of AI, EdTech, and workflow automation. By tackling one of the most time-consuming aspects of education—grading—our platform opens the door to scalable solutions that can be deployed across schools, universities, and large-scale online learning environments. With a focus on efficiency, accuracy, and student outcomes, GrAIdscope is poised to redefine the future of assessment, empowering educators and enhancing the academic journey for students everywhere.
+![GrAIdscope Banner](images/logo.png)
 
 ---
 
-## Inspiration
-We started this project after identifying major issues with OSU’s current grading platform, Gradescope.
-- Firstly, It’s slow: TA and teachers have to manually grade questions, and in big classes, it takes 2 weeks to grade midterms.
-- Secondly,it’s unreliable: Multiple issues been reported when gradescope doesn't get student tests, graded-tests lists, and other glitches. 
+## 🚀 Project Overview
+GrAIdscope is a **revolutionary AI-powered grading platform** designed to transform the way educators assess student work.  
 
+In today’s fast-paced educational environment:  
+- Teachers are overwhelmed by grading large volumes of exams.  
+- Students often wait weeks for meaningful feedback.  
 
-To address these problems, our team researched other grading solutions, comparing their features, strengths, and weaknesses and summarized them to this decision matrix. 
-We used this analysis to design a better system to combine the efficiency of AI-based grading with higher reliability and accessibility for both instructors and students.
+GrAIdscope **automates free-response exam evaluation** with speed and precision:  
+1. Teachers upload their answer key PDF.  
+2. Students submit completed exams.  
+3. AI compares submissions against the key and produces **comprehensive grades** and **detailed, actionable feedback**—all within minutes.  
 
+💡 Benefits:  
+- **Consistency:** Eliminates human error and subjective bias.  
+- **Efficiency:** Reduces grading time from weeks to minutes.  
+- **Learning:** Students receive immediate, transparent feedback.  
 
+For investors, GrAIdscope represents a **cutting-edge opportunity at the intersection of AI, EdTech, and workflow automation**.
+
+---
+
+## 💡 Inspiration
+We identified major issues with OSU’s current grading platform, Gradescope:  
+- ⏳ **Slow:** Manual grading in big classes takes 2+ weeks.  
+- ⚠️ **Unreliable:** Reports of lost student tests, missing grades, and software glitches.  
+
+We researched other solutions, compared their features, and designed a system that **combines AI efficiency with reliability and accessibility**.  
+
+---
 
 ## 🧩 Features
 
-- **Teacher Upload:** Teachers upload the answer key PDF for any exam.  
-- **Student Submission:** Students upload their completed exam PDFs.  
-- **AI Grading:** Automatically compares student answers with the teacher's key and produces:
-  - Detailed scoring breakdowns (Completeness, Correctness, Simplification/Presentation)  
-  - Overall exam score  
-  - Feedback comments for each question  
-- **Secure & Fast:** Uses API keys and efficient backend processing to handle multiple submissions.  
-- **User-Friendly Frontend:** Intuitive interface for uploading files and viewing results.
-
-
-## Design Process
-**Gap Identification:**
-The team analyzed existing graders and found most failed at handling handwritten text and relied on manual upload review.
-The team also found some AI grading software are rated poorly due to steep learning curve for teachers. 
-**Experimental Exploration:** 
-Tested multiple approaches—OCR engines, custom AI scoring logic, and dataset preprocessing to evaluate accuracy gains.
-The team brainstormed and communicated ideas for UI layout for both students and teachers to minimize learning curve.
-**Implementation Actions:**
-Integrated OpenAI API for semantic grading and Amazon S3 for scalable file storage.
-Used React + Vite to improve frontend responsiveness.
-Switched from self-hosted authentication to Google OAuth Login for security and simplicity.
-Built a Flask + PostgreSQL backend with Nginx deployment to ensure fast, reliable service.
-Outcome: The exploration directly improved usability, data flow, and OCR precision, producing a more accurate and efficient AI grader.
-
+| Feature | Description |
+|---------|-------------|
+| **Teacher Upload** | Teachers upload the exam answer key PDF. |
+| **Student Submission** | Students upload completed exam PDFs. |
+| **AI Grading** | Compares student answers with teacher key and produces: <br>• Detailed scoring breakdowns (Completeness, Correctness, Simplification/Presentation) <br>• Overall exam score <br>• Feedback comments per question |
+| **Secure & Fast** | Uses API keys and backend processing to handle multiple submissions efficiently. |
+| **User-Friendly Frontend** | Intuitive interface for uploading files and viewing results. |
 
 ---
-## Metrics
+
+## 🛠 Design Process
+
+<details>
+<summary>Click to expand the design process</summary>
+
+### Gap Identification
+- Existing graders fail at handling handwritten text.  
+- Many AI grading tools have a steep learning curve for teachers.
+
+### Experimental Exploration
+- Tested multiple OCR engines, AI scoring logic, and dataset preprocessing.  
+- Brainstormed intuitive UI layout for students and teachers.  
+
+### Implementation Actions
+- Integrated OpenAI GPT-5 API for semantic grading.  
+- Used Amazon S3 for scalable file storage.  
+- React + Vite frontend for responsiveness.  
+- Google OAuth for authentication.  
+- Flask + PostgreSQL backend with NGINX deployment.  
+
+**Outcome:** Improved usability, data flow, OCR precision, and AI grading accuracy.
+</details>
+
+---
+
+## 📊 Metrics
+- ⚡ **Grading Speed:** Reduced midterm grading from 2 weeks to minutes.  
+- 🎯 **Accuracy:** AI scores closely match human graders with detailed explanations.  
+- 📈 **Scalability:** Handles hundreds of submissions concurrently.
+
 ![Screenshot](images/graiscope.png)
 
+---
 
 ## 🛠 Technology Stack
 
@@ -64,10 +93,9 @@ Outcome: The exploration directly improved usability, data flow, and OCR precisi
 - **Frameworks/Libraries:** React, Vite  
 - **Languages:** HTML, CSS, JavaScript  
 
-
 ---
 
-## 🚀 Getting Started
+## 🏁 Getting Started
 
 ### 1. Clone the repository
 ```bash

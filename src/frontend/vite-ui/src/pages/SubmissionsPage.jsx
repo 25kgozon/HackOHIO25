@@ -92,7 +92,7 @@ const SubmissionsPage = () => {
                                                 className="btn"
                                                 onClick={() =>
                                                     navigate(`/submissions/${ass.id}`, {
-                                                        state: { assignment: ass, courseTitle: course.courseTitle }
+                                                        state: { submiss: ass, courseTitle: course.courseTitle }
                                                     })
                                                 }
                                             >

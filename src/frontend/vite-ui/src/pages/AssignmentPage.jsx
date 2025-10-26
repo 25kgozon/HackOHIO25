@@ -41,6 +41,7 @@ const AssignmentPage = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ assignment: assignmentId }),
             });
+            console.log(assignmentId);
 
             if (!createRes.ok) throw new Error("Failed to create student file record");
             const { id: fileId } = await createRes.json();

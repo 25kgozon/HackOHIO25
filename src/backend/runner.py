@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 # Load environment variables from .env
 load_dotenv()
 
-
 from db import *
 from concurrent.futures import ThreadPoolExecutor, Future
 import traceback
@@ -12,7 +11,6 @@ import os
 import tempfile
 import s3
 
-
 try:
     from grader import AIGrader
 except ImportError:
@@ -20,62 +18,70 @@ except ImportError:
 
 WORKERS = 1
 
+# Global cache for teacher data
+TEACHER_CACHE = {}
 
-
-def run_file_event(db : DB, id : int, task_type : int, prompt_info : dict, files : list[str]):
+def run_file_event(db: DB, id: int, task_type: int, prompt_info: dict, files: list[str]):
     initial = str(files[0])
-
-     
     grader = AIGrader()
 
     fileInfo = db.get_file(initial)
     is_teacher = fileInfo["file_role"] == FileRole.TEACHER_KEY.value
     is_student = fileInfo["file_role"] == FileRole.STUDENT_RESPONSE.value
+
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
         tmp = tmp.name
-
-        # Might throw botocore.exceptions.ClientError
         s3.download_by_key(initial, tmp)
+
+
         if is_teacher:
             out = grader.read_teacher_files(tmp)
+            TEACHER_CACHE["answer_key"] = out
         elif is_student:
-            out = grader.read_student_file(tmp)
+            if TEACHER_CACHE:
+                out = grader.read_student_file(tmp, teacher_context=TEACHER_CACHE)
+            else:
+                print("⚠️ No teacher file cached — reading student file alone.")
+                out = grader.read_student_file(tmp)
 
         db.complete_file_task(id)
         db.set_file_cache(initial, out)
 
 
 def run_text_event(db: DB, id: int, task_type: int, prompt_info: dict, texts: list[str]):
-    """
-    Process text tasks, similar to file tasks.
-    """
     grader = AIGrader()
-
-    #print("asdasdsads")
-    
-    # Combine texts into one string (or handle separately depending on task_type)
     combined_text = "\n\n".join(texts)
 
-    # Example: if this is a "summarize" task
     if task_type == TaskType.SUMMARIZE.value:
-        # For simplicity, just wrap in a grader method (you could implement a dedicated one)
-        out = combined_text  # replace with actual call if needed
+        out = combined_text
     else:
-        out = combined_text  # placeholder
+        out = combined_text
 
-    # Store result in cache keyed by task id
-   
     db.complete_text_task(id)
 
 
+def preload_teacher_files(db: DB, grader: AIGrader):
+    """
+    Loads the teacher answer key PDF into memory once at startup.
+    """
+    print("Preloading teacher file...")
+
+    teacher_pdf_path = "/Users/kgozon/Documents/midterm1_solution.pdf"
+    try:
+        out = grader.read_teacher_files(teacher_pdf_path)
+        TEACHER_CACHE["answer_key"] = out
+        print(f"✅ Cached teacher file: {teacher_pdf_path}")
+    except Exception as e:
+        print(f"⚠️ Failed to preload teacher file: {e}")
 
 
 def main():
     db: DB = DB()
     print("Starting event runner")
+    grader = AIGrader()
+    preload_teacher_files(db, grader)
 
     with ThreadPoolExecutor(max_workers=WORKERS) as exec:
-        # 1. Dequeue a file task
         file_event = db.dequeue_file_task()
         text_event = db.dequeue_text_task()
 
@@ -91,16 +97,11 @@ def main():
         else:
             print("No text tasks in queue")
 
-        # Wait for all futures to finish
         for fut in futures:
             while fut.running():
                 time.sleep(1)
             if fut.exception():
                 traceback.print_exception(fut.exception())
-
-
-
-
 
 
 if __name__ == "__main__":

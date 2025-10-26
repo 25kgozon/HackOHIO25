@@ -63,7 +63,46 @@ file_cache = (db.get_file_cache("242f668d-8556-40b7-a0a6-7bb7a4bbc053"))
 
 # print(generate_download_url("9f16967b-f48e-4e44-a682-fbf32fc5f6c7"))
 
-db.enqueue_text_task(TaskType.SUMMARIZE, [file_cache], "{}")
+
+# Get the file info
+file_id = "242f668d-8556-40b7-a0a6-7bb7a4bbc053"
+file_info = db.get_file(file_id)
+
+if file_info and file_info["posted_user"]:
+    # Get the actual user who posted the file
+    openid = file_info["posted_user"]
+
+    # Get all classes for this user
+    user_classes = db.get_user_classes(openid)
+
+    if user_classes:
+        # Grab the first class (or you could loop through all)
+        class_name = user_classes[0]["name"]
+
+        # Print the class name
+        print("Class Name:", class_name)
+
+        # Enqueue the summarization task using the class name dynamically
+        file_cache = db.get_file_cache(file_id)
+        db.enqueue_text_task(TaskType.SUMMARIZE, [file_cache], {"subject": class_name})
+    else:
+        print("No classes found for this user.")
+else:
+    print("File not found or no user associated with file.")
+
+
+file_id = "242f668d-8556-40b7-a0a6-7bb7a4bbc053"
+file_info = db.get_file(file_id)
+print(file_info)
+print(openid)
+
+
+
+
+
+
+
+
 
 
 

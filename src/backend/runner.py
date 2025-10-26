@@ -45,27 +45,18 @@ def run_file_event(db : DB, id : int, task_type : int, prompt_info : dict, files
         db.set_file_cache(initial, out)
 
 
-def run_text_event(db: DB, id: int, task_type: int, prompt_info: dict, texts: list[str]):
+def run_text_event(db: DB, id: int, task_type: int, prompt_info: dict, texts: list[str], files: list[UUID]):
     """
     Process text tasks, similar to file tasks.
     """
     grader = AIGrader()
 
-    print(prompt_info)
-    
-    # Combine texts into one string (or handle separately depending on task_type)
-    combined_text = "\n\n".join(texts)
 
-    # Example: if this is a "summarize" task
-    if task_type == TaskType.SUMMARIZE.value:
-        # For simplicity, just wrap in a grader method (you could implement a dedicated one)
-        out = combined_text  # replace with actual call if needed
-    else:
-        out = combined_text  # placeholder
+    files_text : list[str] = list(map(lambda f: db.get_file_cache(str(f)), files) )
 
-    # Store result in cache keyed by task id
-   
-    db.complete_text_task(id)
+    print(files_text)
+
+    # db.complete_text_task(id)
 
 
 

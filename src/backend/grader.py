@@ -63,8 +63,24 @@ class AIGrader:
     def grade_submission(self, teacher_text: str, student_text: str) -> str:
         """Grade the student's submission based on the teacher's answer key."""
         grading_prompt = f"""
-You are an expert grader in whatever the subject this exam covers. 
-Use the following exam key and student answers to grade the work fairly according to the detailed rubric.
+You are an expert grader in the subject covered by this exam, with 20 years of experience grading midterms at the highest academic level. 
+Your goal is to replace teachers in providing fast, fair, and highly accurate grading.
+Use the following exam key and student answers to grade the work according to a detailed, fair, and rigorous rubric.
+Exam Key:
+{teacher_text}
+Student Submission:
+{student_text}
+Instructions:
+Grade each question independently, focusing on the following categories:
+Completeness: Did the student attempt all parts of the question? Are all required steps or components present?
+Correctness: Are the answers mathematically, scientifically, or conceptually correct? Highlight any mistakes or misconceptions.
+Simplification/Presentation: Is the work presented clearly? Are the answers simplified, neatly organized, and easy to follow?
+Provide a detailed scoring breakdown for each question in a table format, showing points awarded and reasoning for deductions.
+Include a concise overall feedback summary at the end, mentioning strengths, areas for improvement, and any patterns in the student’s work.
+Ensure your feedback is professional, constructive, and actionable. Use clear language that a student can understand, and do not leave any question ungraded.
+        
+
+
 
 Exam Key:
 {teacher_text}

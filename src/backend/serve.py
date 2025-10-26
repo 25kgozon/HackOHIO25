@@ -276,6 +276,11 @@ def create_teacher_file():
 
     data = request.get_json()
 
+
+    if db.get_assignment(UUID(data["assignment"])) is None:
+        print("PANIC PANIC PANIC", data["assignment"])
+        return "PANIC", 401
+
     fid = db.create_file(user["sub"], "teacher.pdf", FileRole.TEACHER_KEY, UUID(data["assignment"]), "")
     return jsonify({"id": fid})  # <-- wrap in dict with "id"
 
@@ -303,11 +308,14 @@ def upload_to_s3(path):
 
 
     db.enqueue_file_task(TaskType.OCR, [path], "{}")
+    print(dbfile)
     
     if dbfile["file_role"] == FileRole.TEACHER_KEY.value:
         db.set_file_assignments(
             dbfile["file_assignment"], [UUID(path)]
         )
+        print("set file")
+        
         
     if dbfile["file_role"] == FileRole.STUDENT_RESPONSE.value:
         ass = db.get_assignment(dbfile["file_assignment"])

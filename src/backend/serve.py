@@ -133,6 +133,39 @@ def delete_class():
     return jsonify(":>")
 
 
+@app.route("/api/create_assignment", methods=["POST"])
+def create_assignment():
+    user = session.get('user')
+    if not user:
+        return jsonify({"logged_in": False}, 401)
+    if user["role"] != "teacher":
+        return jsonify({"error": "Not a teacher"}, 401)
+
+    data = request.get_json()
+
+    id = db.create_assignment(
+        data["class_id"],    
+        data["ass name"],
+        data["ass desc"],
+        data["ass attrs"], # Dict, leave blank for now
+        data["context"]
+    )
+    return jsonify({"id": id})
+
+@app.route("/api/get_class_assignments", methods=["POST"])
+def get_ass():
+    user = session.get('user')
+    if not user:
+        return jsonify({"logged_in": False}, 401)
+
+    data = request.get_json()
+    print(
+        db.get_class_assignments(data["class id"])
+    )
+
+    return jsonify(
+        db.get_class_assignments(data["class id"])
+    )
 
 
 

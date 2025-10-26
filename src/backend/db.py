@@ -627,6 +627,61 @@ class DB:
                 )
             return out
 
+
+
+    def create_assignment(
+        self, class_id: UUID, name: str, description: str, attrs: dict, context: str
+    ):
+        attrs_txt = self._maybe_json_dump(attrs)
+
+        with self._conn_cur() as (_, cur):
+            cur.execute(
+                """
+                INSERT INTO assignments (name, description, attrs, context, files)
+                VALUES (%s, %s, %s, %s, %s)
+                RETURNING id
+                """,
+                (name, description, attrs_txt, context, []),
+            )
+            (ass_id,) = cur.fetchone()
+
+            cur.execute(
+                """
+                UPDATE classes SET assignments = assignments || %s WHERE id=%s
+                """,
+                ([ass_id], class_id),
+            )
+            return ass_id
+
+    def get_class_assignments(self, class_id: UUID) -> List[Dict[str, Any]]:
+        """
+        Return all assignments (id, name, description, attrs, context)
+        associated with the given class.
+        """
+        with self._conn_cur() as (_, cur):
+            cur.execute(
+                """
+                SELECT a.id, a.name, a.description, a.attrs
+                FROM classes c
+                JOIN LATERAL unnest(c.assignments) AS ass_id ON TRUE
+                JOIN assignments a ON a.id = ass_id
+                WHERE c.id = %s
+                """,
+                (class_id,),
+            )
+            rows = cur.fetchall()
+            out: List[Dict[str, Any]] = []
+            for r in rows:
+                out.append(
+                    {
+                        "id": str(r[0]),
+                        "name": r[1],
+                        "description": r[2],
+                        "attrs": self._maybe_json_load(r[3])
+                    }
+                )
+            return out
+
     def complete_text_task(self, task_id: int) -> bool:
         with self._conn_cur() as (_, cur):
             cur.execute("DELETE FROM text_task WHERE id = %s", (task_id,))

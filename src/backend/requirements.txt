@@ -6,3 +6,5 @@ openai
 dotenv
 requests
 authlib
+re
+json

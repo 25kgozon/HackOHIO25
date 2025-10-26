@@ -244,42 +244,40 @@ def create_student_file():
     if not user:
         return jsonify({"logged_in": False}, 401)
 
-
     fid = db.create_file(user["sub"], "student.pdf", FileRole.STUDENT_RESPONSE, "")
-    return jsonify(fid)
+    return jsonify({"id": fid})  # <-- wrap in dict
 
 @app.route("/api/create_teacher_file", methods=["POST"])
-def create_student_file():
+def create_teacher_file():
     user = session.get('user')
     if not user:
-        return jsonify({"logged_in": False}, 401)
-
+        return jsonify({"logged_in": False}), 401
 
     fid = db.create_file(user["sub"], "teacher.pdf", FileRole.TEACHER_KEY, "")
-    return jsonify(fid)
+    return jsonify({"id": fid})  # <-- wrap in dict with "id"
+
 
 
 
 @app.route("/api/upload/<path:path>", methods=["POST"])
 def upload_to_s3(path):
     if "file" not in request.files:
-        return jsonify({"error": "No file part"})
+        return jsonify({"error": "No file part"}), 400
     if db.get_file(path) is None:
-        return jsonify({"error": "No such file exists"})
+        return jsonify({"error": "No such file exists"}), 404
 
     file = request.files["file"]
     if file.filename == "":
-        return {"error": "No selected file"}, 400
-
-    # Generate a unique filename with the same extension (if any)
+        return jsonify({"error": "No selected file"}), 400
 
     s3.upload_fileobj(
         file,
         BUCKET,
-        path
+        path  # use path here, not 'key'
     )
 
-    return jsonify({"message": "Upload successful", "url": generate_download_url(key)})
+    return jsonify({"message": "Upload successful", "url": generate_download_url(path)})
+
 
 
 

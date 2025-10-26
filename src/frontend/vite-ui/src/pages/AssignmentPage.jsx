@@ -27,25 +27,31 @@ const AssignmentPage = () => {
         } else alert("Please select a PDF file.");
     };
 
-    const handleUpload = async () => {
+    const handleStudentUpload = async () => {
         if (!selectedFile) return alert("No file selected.");
 
         try {
+            // Step 1: Request a new student file record from backend
+            const createRes = await fetch("/api/create_student_file", {
+                method: "POST",
+            });
+            if (!createRes.ok) throw new Error("Failed to create student file record");
+            const { id: fileId } = await createRes.json();
+
+            // Step 2: Upload file to backend endpoint
             const formData = new FormData();
             formData.append("file", selectedFile);
-            formData.append("assignmentId", id);
-            formData.append("studentId", user.id);
 
-            const res = await fetch("/api/upload", {
+            const uploadRes = await fetch(`/api/upload/${fileId}`, {
                 method: "POST",
                 body: formData,
             });
 
-            if (!res.ok) throw new Error("Upload failed");
+            if (!uploadRes.ok) throw new Error("Upload failed");
+            const data = await uploadRes.json();
 
-            const data = await res.json();
-            console.log("Uploaded file URL:", data.url);
-            alert(`File uploaded successfully! Check console for URL.`);
+            console.log("Uploaded student file URL:", data.url);
+            alert("File uploaded successfully! Check console for URL.");
 
             setSelectedFile(null);
             setPdfUrl(null);
@@ -55,7 +61,7 @@ const AssignmentPage = () => {
         }
     };
 
-    // ---------- Teacher Answer Key ----------
+    // ---------- Teacher Upload ----------
     const [answerKeyFile, setAnswerKeyFile] = useState(null);
     const [answerKeyUrl, setAnswerKeyUrl] = useState(null);
 
@@ -67,25 +73,31 @@ const AssignmentPage = () => {
         } else alert("Please select a PDF file.");
     };
 
-    const handleAnswerKeyUpload = async () => {
+    const handleTeacherUpload = async () => {
         if (!answerKeyFile) return alert("No file selected.");
 
         try {
+            // Step 1: Request a new teacher file record from backend
+            const createRes = await fetch("/api/create_teacher_file", {
+                method: "POST",
+            });
+            if (!createRes.ok) throw new Error("Failed to create teacher file record");
+            const { id: fileId } = await createRes.json();
+
+            // Step 2: Upload file to backend endpoint
             const formData = new FormData();
             formData.append("file", answerKeyFile);
-            formData.append("assignmentId", id);
-            formData.append("teacherId", user.id);
 
-            const res = await fetch("/api/upload", {
+            const uploadRes = await fetch(`/api/upload/${fileId}`, {
                 method: "POST",
                 body: formData,
             });
 
-            if (!res.ok) throw new Error("Upload failed");
+            if (!uploadRes.ok) throw new Error("Upload failed");
+            const data = await uploadRes.json();
 
-            const data = await res.json();
-            console.log("Uploaded answer key URL:", data.url);
-            alert(`Answer key uploaded successfully! Check console for URL.`);
+            console.log("Uploaded teacher file URL:", data.url);
+            alert("Answer key uploaded successfully! Check console for URL.");
 
             setAnswerKeyFile(null);
             setAnswerKeyUrl(null);
@@ -98,7 +110,6 @@ const AssignmentPage = () => {
     // ---------- AI Instructions ----------
     const [aiInstructions, setAiInstructions] = useState("");
     const [showAiInstructions, setShowAiInstructions] = useState(false);
-
     const toggleAiInstructions = () => setShowAiInstructions(!showAiInstructions);
     const handleSaveAiInstructions = () => {
         console.log("AI Instructions saved:", aiInstructions);
@@ -148,8 +159,8 @@ const AssignmentPage = () => {
                         <h4>Submit Your Assignment:</h4>
                         <input type="file" accept="application/pdf" id="studentFileInput" style={{ display: "none" }} onChange={handleFileChange} />
                         <button className="btn" onClick={() => document.getElementById("studentFileInput").click()}>Select PDF</button>
-                        {pdfUrl && <iframe src={pdfUrl} width="100%" height="600px" title="PDF Preview" />}
-                        <button className="btn" onClick={handleUpload} disabled={!selectedFile}>Upload PDF</button>
+                        {pdfUrl && <iframe src={pdfUrl} width="100%" height="400px" title="PDF Preview" />}
+                        <button className="btn" onClick={handleStudentUpload} disabled={!selectedFile}>Upload PDF</button>
                     </div>
                 )}
 
@@ -160,13 +171,13 @@ const AssignmentPage = () => {
                         <div className="teacher-buttons">
                             <input type="file" accept="application/pdf" id="answerKeyInput" style={{ display: "none" }} onChange={handleAnswerKeyChange} />
                             <button className="btn" onClick={() => document.getElementById("answerKeyInput").click()}>Select PDF</button>
-                            <button className="btn" onClick={handleAnswerKeyUpload} disabled={!answerKeyFile}>Upload Answer Key</button>
+                            <button className="btn" onClick={handleTeacherUpload} disabled={!answerKeyFile}>Upload Answer Key</button>
                             <button className="btn" onClick={toggleAiInstructions}>
                                 {showAiInstructions ? "Close AI Instructions" : "AI Instructions"}
                             </button>
                         </div>
 
-                        {answerKeyUrl && <iframe src={answerKeyUrl} width="100%" height="600px" title="Answer Key Preview" />}
+                        {answerKeyUrl && <iframe src={answerKeyUrl} width="100%" height="400px" title="Answer Key Preview" />}
 
                         <Rubric />
 

@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS classes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    owner VARCHAR(254),
     name TEXT,
     description TEXT,
     assignments UUID[]
@@ -108,7 +109,6 @@ class DB:
             "DATABASE_URL",
             "postgres://appuser:apppass@localhost:5432/appdb",
         )
-        print(db_url)
 
         parsed = urlparse(db_url)
         user = parsed.username
@@ -117,7 +117,6 @@ class DB:
         port = parsed.port
         database = parsed.path.lstrip("/")
 
-        print(password)
 
         self.pool = psycopg2.pool.SimpleConnectionPool(
             2,
@@ -197,19 +196,25 @@ class DB:
     ) -> None:
         classes = classes or []
         other_props_txt = self._maybe_json_dump(other_properties)
+
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
                 INSERT INTO users (
-                    openid, name, other_properites, email, role, classes
+                    openid,
+                    name,
+                    other_properites,
+                    email,
+                    role,
+                    classes
                 )
                 VALUES (%s, %s, %s, %s, %s, %s)
-                ON CONFLICT (openid) DO UPDATE
+                ON CONFLICT (openid)
+                DO UPDATE
                 SET name = EXCLUDED.name,
                     other_properites = EXCLUDED.other_properites,
                     email = EXCLUDED.email,
-                    role = EXCLUDED.role,
-                    classes = EXCLUDED.classes
+                    role = EXCLUDED.role
                 """,
                 (openid, name, other_props_txt, email, role.value, classes),
             )
@@ -236,6 +241,20 @@ class DB:
                 "role": row[4],
                 "classes": row[5],
             }
+    def update_user_classes(
+        self,
+        openid: str,
+        classes: List[str],
+    ) -> None:
+        with self._conn_cur() as (_, cur):
+            cur.execute(
+                """
+                UPDATE users
+                SET classes = %s
+                WHERE openid = %s
+                """,
+                (classes, openid),
+            )
 
     # -----------------------
     # Files
@@ -259,6 +278,22 @@ class DB:
             )
             (fid,) = cur.fetchone()
             return str(fid)
+    def create_class(self, 
+            owner_user: str,
+            name : str, 
+            description : str):
+        with self._conn_cur() as (_, cur):
+            cur.execute(
+                """
+                INSERT INTO classes (owner, name, description, assignments)
+                VALUES (%s, %s, %s, %s::uuid[])
+                RETURNING id
+                """,
+                (owner_user, name, description, []),
+            )
+            (fid,) = cur.fetchone()
+            return str(fid)
+
 
     def get_file(self, file_id: str) -> Optional[Dict[str, Any]]:
         with self._conn_cur() as (_, cur):

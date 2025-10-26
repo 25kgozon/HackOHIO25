@@ -5,14 +5,58 @@
     margin: 0 auto;
 }
 
-.course-title {
-    font-size: 2rem;
+.course-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
+.course-title {
+    font-size: 2rem;
+    margin: 0;
+}
+
+.course-actions {
+    display: flex;
+    gap: 0.5rem;
+    /* smaller spacing between buttons */
+}
+
+.btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.75rem;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+}
+
+/* Delete class button - smaller, themed color */
+.btn.delete-class {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem;
+    background-color: #d8b4fe;
+    /* soft purple */
+    color: #1e1b4b;
+    /* dark text for contrast */
+}
+
+.btn.delete-class:hover {
+    background-color: #c084fc;
+    /* slightly darker purple on hover */
+}
+
+/* Assignments section */
 .assignments-section {
     margin-bottom: 3rem;
-    /* space between upcoming and graded sections */
 }
 
 .assignments-section h3 {
@@ -24,7 +68,6 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    /* space between individual cards */
 }
 
 .assignment-card {
@@ -50,6 +93,7 @@
     border-left: 5px solid var(--fuchsia-400);
 }
 
+/* Modal */
 .modal-overlay {
     position: fixed;
     top: 0;

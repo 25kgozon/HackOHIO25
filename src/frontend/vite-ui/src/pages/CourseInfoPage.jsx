@@ -54,6 +54,31 @@ const CourseInfoPage = () => {
         setShowModal(false);
     };
 
+    // 🗑️ DELETE CLASS (Teacher only)
+    const deleteClass = async () => {
+        if (!window.confirm(`Are you sure you want to delete "${courseTitle}"? This cannot be undone.`)) return;
+
+        try {
+            const response = await fetch("/api/delete_class", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ id }),
+            });
+
+            if (response.ok) {
+                alert("Class deleted successfully!");
+                navigate("/courses"); // Go back to courses list
+            } else {
+                const data = await response.json();
+                alert(`Error: ${data.error || "Failed to delete class."}`);
+            }
+        } catch (err) {
+            console.error("Error deleting class:", err);
+            alert("An error occurred while deleting the class.");
+        }
+    };
+
     return (
         <div className="course-info-page">
             <header className="main-header">
@@ -64,13 +89,16 @@ const CourseInfoPage = () => {
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             <main className="course-info-content fade-in">
-                <h2 className="course-title iridescent">{courseTitle}</h2>
+                <div className="course-header">
+                    <h2 className="course-title iridescent">{courseTitle}</h2>
 
-                {isTeacher && (
-                    <button className="btn" onClick={() => setShowModal(true)}>
-                        Add Assignment
-                    </button>
-                )}
+                    {isTeacher && (
+                        <div className="course-actions">
+                            <button className="btn" onClick={() => setShowModal(true)}>Add Assignment</button>
+                            <button className="btn danger" onClick={deleteClass}>Delete Class</button>
+                        </div>
+                    )}
+                </div>
 
                 <section className="assignments-section">
                     <h3>Upcoming Assignments</h3>

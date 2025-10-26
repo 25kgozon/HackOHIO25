@@ -10,6 +10,7 @@ const CoursesPage = () => {
     const isTeacher = user?.role === "teacher";
 
     const [newClassName, setNewClassName] = useState("");
+    const [newInstructor, setNewInstructor] = useState("");
     const [newClassDesc, setNewClassDesc] = useState("");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [courses, setCourses] = useState([]);
@@ -17,7 +18,7 @@ const CoursesPage = () => {
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    // Random pools for names
+    // Random pools for student joining
     const classNames = [
         "Intro to AI",
         "Web Development 101",
@@ -71,6 +72,8 @@ const CoursesPage = () => {
     // ---------- Create Class (Teacher) ----------
     const createClass = async () => {
         if (!newClassName.trim()) return alert("Please enter a class name.");
+        if (!newInstructor.trim()) return alert("Please enter an instructor name.");
+        if (!newClassDesc.trim()) return alert("Please enter a description.");
 
         try {
             const res = await fetch("/api/create_class", {
@@ -79,6 +82,7 @@ const CoursesPage = () => {
                 credentials: "include",
                 body: JSON.stringify({
                     name: newClassName,
+                    instructor: newInstructor,
                     desc: newClassDesc,
                 }),
             });
@@ -86,8 +90,9 @@ const CoursesPage = () => {
             if (!res.ok) throw new Error("Failed to create class");
 
             const data = await res.json();
-            alert(`Class created! (${newClassName})`);
+            alert(`Class created! (${newClassName} by ${newInstructor})`);
             setNewClassName("");
+            setNewInstructor("");
             setNewClassDesc("");
             setShowCreateModal(false);
             fetchClasses(); // Refresh class list
@@ -97,16 +102,17 @@ const CoursesPage = () => {
         }
     };
 
-
     // ---------- Simulated Join Class (Student) ----------
     const joinRandomClass = () => {
         const randomName = classNames[Math.floor(Math.random() * classNames.length)];
         const randomInstructor = instructorNames[Math.floor(Math.random() * instructorNames.length)];
+        const fakeDesc = `${randomName} - Introductory course for students`;
 
         const fakeClass = {
             id: Math.random().toString(36).substring(2, 10),
             name: randomName,
             instructor: randomInstructor,
+            desc: fakeDesc,
         };
 
         setCourses((prev) => [...prev, fakeClass]);
@@ -125,7 +131,7 @@ const CoursesPage = () => {
 
             <main className="courses-content fade-in">
                 {isTeacher ? (
-                    <button className="btn" onClick={() => setShowCreateModal(true)}>Create Random Class</button>
+                    <button className="btn" onClick={() => setShowCreateModal(true)}>Create Class</button>
                 ) : (
                     <button className="btn" onClick={() => setShowJoinModal(true)}>Join Random Class</button>
                 )}
@@ -147,6 +153,7 @@ const CoursesPage = () => {
                                 >
                                     <h3>{course.name}</h3>
                                     <p className="instructor">Instructor: {course.instructor || "Unknown"}</p>
+                                    <p className="description">{course.desc || "No description provided."}</p>
                                     <button
                                         className="btn"
                                         onClick={() =>
@@ -174,6 +181,12 @@ const CoursesPage = () => {
                                 value={newClassName}
                                 onChange={(e) => setNewClassName(e.target.value)}
                             />
+                            <input
+                                type="text"
+                                placeholder="Instructor Name"
+                                value={newInstructor}
+                                onChange={(e) => setNewInstructor(e.target.value)}
+                            />
                             <textarea
                                 placeholder="Class Description"
                                 value={newClassDesc}
@@ -186,7 +199,6 @@ const CoursesPage = () => {
                         </div>
                     </div>
                 )}
-
 
                 {/* Join Random Class Modal */}
                 {showJoinModal && (

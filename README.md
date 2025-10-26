@@ -71,5 +71,5 @@ Outcome: The exploration directly improved usability, data flow, and OCR precisi
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/gradescope-reimagined.git
-cd gradescope-reimagined
+git clone https://github.com/25kgozon/HackOHIO25.git
+cd HackOHIO25

@@ -10,7 +10,7 @@ import os
 from flask import Flask, make_response, redirect, session, jsonify, request
 from authlib.integrations.flask_client import OAuth
 
-from db import DB, UserRole
+from db import DB, FileRole, UserRole
 from s3 import *
 
 db = DB()
@@ -204,10 +204,9 @@ def get_ass():
     )
 
 
-@app.route("/api/aws_test")
-def aws_test():
-    return jsonify({"upload": generate_upload_url("test"), "download": generate_download_url("test")})
-
+@app.route("/api/file/<path:path>")
+def get_file(path):
+    return redirect(generate_download_url(path))
 
 
 """
@@ -239,9 +238,30 @@ document.querySelector('input').onchange = async (e) => {
 """
 
 
+@app.route("/api/create_student_file", methods=["POST"])
+def create_student_file():
+    user = session.get('user')
+    if not user:
+        return jsonify({"logged_in": False}, 401)
 
-@app.route("/api/upload", methods=["POST"])
-def upload_to_s3():
+
+    fid = db.create_file(user["sub"], "student.pdf", FileRole.STUDENT_RESPONSE, "")
+    return jsonify(fid)
+
+@app.route("/api/create_teacher_file", methods=["POST"])
+def create_student_file():
+    user = session.get('user')
+    if not user:
+        return jsonify({"logged_in": False}, 401)
+
+
+    fid = db.create_file(user["sub"], "teacher.pdf", FileRole.TEACHER_KEY, "")
+    return jsonify(fid)
+
+
+
+@app.route("/api/upload/<path:path>", methods=["POST"])
+def upload_to_s3(path):
     if "file" not in request.files:
         return {"error": "No file part"}, 400
 

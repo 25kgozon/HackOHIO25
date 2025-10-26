@@ -304,7 +304,7 @@ def upload_to_s3(path):
 
     db.enqueue_file_task(TaskType.OCR, [path], "{}")
     
-    if dbfile["role"] == FileRole.STUDENT_RESPONSE.value:
+    if dbfile["file_role"] == FileRole.STUDENT_RESPONSE.value:
         db.enqueue_text_task(TaskType.SUMMARIZE, [])
     
 

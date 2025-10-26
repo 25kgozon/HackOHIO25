@@ -13,6 +13,7 @@ import SubmissionsPage from './pages/SubmissionsPage.jsx';
 import SubmissionDetailsPage from './pages/SubmissionDetailsPage.jsx';
 import GradesPage from './pages/GradesPage.jsx';
 import HandleFrontendLogin from './pages/HandleFrontendLogin.jsx'
+import SettingsPage from './pages/SettingsPage.jsx';
 
 // --- Context ---//
 import { UserProvider } from './context/UserContext.jsx';
@@ -32,6 +33,8 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/submissions/:submissionId" element={<SubmissionDetailsPage />} />
           <Route path="/grades" element={<GradesPage />} />
           <Route path="/handle_frontend_login" element={<HandleFrontendLogin />} />
+          <Route path="/settings" element={<SettingsPage />} />
+
         </Routes>
       </Router>
     </UserProvider>

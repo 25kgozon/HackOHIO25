@@ -1,40 +1,38 @@
 .grades-page {
-    padding: 120px 20px 20px 20px;
-    max-width: 900px;
+    padding: 100px 20px 20px;
+    font-family: var(--font-sans);
+    max-width: 800px;
     margin: 0 auto;
 }
 
-.grades-content h2 {
-    margin-bottom: 1.5rem;
+.course-section {
+    margin-bottom: 2rem;
 }
 
-.submission-list {
+.course-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    background: conic-gradient(from 180deg at 50% 50%, #7dd3fc, #5b6cff, #8b5cf6, #d08bff, #7dd3fc);
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.grades-list {
     list-style: none;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 0.8rem;
 }
 
-.submission-item {
+.grade-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.8rem 1.2rem;
+    border-radius: 1rem;
     background: var(--glass-bg);
     border: 1px solid var(--glass-brd);
-    border-radius: 1rem;
-    padding: 1rem 1.5rem;
-    box-shadow: 0 8px 30px rgba(24, 24, 55, 0.25);
-}
-
-.submission-item iframe {
-    border: 1px solid var(--glass-brd);
-    border-radius: 0.5rem;
-    margin: 1rem 0;
-}
-
-.submission-item .btn {
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    background: linear-gradient(135deg, var(--indigo-600), var(--fuchsia-400));
-    color: white;
-    cursor: pointer;
-    border: none;
+    box-shadow: var(--shadow-1);
+    font-weight: 600;
 }

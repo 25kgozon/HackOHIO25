@@ -105,7 +105,8 @@ CREATE TABLE IF NOT EXISTS text_task (
     task_type INT,
     -- JSON
     prompt_info TEXT,
-    texts TEXT[]
+    texts TEXT[],
+    files UUID[]
 );
 """
 
@@ -544,17 +545,18 @@ class DB:
         self,
         task_type: TaskType,
         texts: List[str],
+        dependencies : List[UUID],
         prompt_info: Optional[Any] = None,
     ) -> int:
         prompt_txt = self._maybe_json_dump(prompt_info)
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
-                INSERT INTO text_task (isRunning, task_type, prompt_info, texts)
-                VALUES (B'0', %s, %s, %s)
+                INSERT INTO text_task (isRunning, task_type, prompt_info, texts, files)
+                VALUES (B'0', %s, %s, %s, %s::UUID[])
                 RETURNING id
                 """,
-                (task_type.value, prompt_txt, texts),
+                (task_type.value, prompt_txt, texts, dependencies),
             )
             (task_id,) = cur.fetchone()
             return int(task_id)
@@ -567,6 +569,11 @@ class DB:
                     SELECT id
                     FROM text_task
                     WHERE isRunning = B'0'
+                      AND (
+                          SELECT COUNT(*) 
+                          FROM unnest(files) f
+                          WHERE f NOT IN (SELECT id FROM file_cache)
+                      ) = 0
                     ORDER BY id
                     FOR UPDATE SKIP LOCKED
                     LIMIT 1
@@ -587,7 +594,6 @@ class DB:
                 "prompt_info": self._maybe_json_load(row[2]),
                 "texts": row[3] or [],
             }
-
     def get_text_task(self, task_id: int) -> Optional[Dict[str, Any]]:
         with self._conn_cur() as (_, cur):
             cur.execute(

@@ -11,6 +11,7 @@ from flask import Flask, make_response, redirect, session, jsonify, request
 from authlib.integrations.flask_client import OAuth
 
 from db import DB, UserRole
+from s3 import *
 
 db = DB()
 
@@ -203,6 +204,9 @@ def get_ass():
     )
 
 
+@app.route("/api/aws_test")
+def aws_test():
+    return jsonify({"upload": generate_upload_url("test"), "download": generate_download_url("test")})
 
 
 

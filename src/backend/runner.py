@@ -54,6 +54,10 @@ def run_text_event(db: DB, id: int, task_type: int, prompt_info: dict, texts: li
 
     files_text : list[str] = list(map(lambda f: db.get_file_cache(str(f)), files) )
 
+    student_key_text = files_text[0]
+    teacher_key_text = files_text[1] if len(files_text) > 1 else None
+    context_files_text = files_text[2:] if len(files_text) > 2 else None
+
     print(files_text)
 
     # db.complete_text_task(id)

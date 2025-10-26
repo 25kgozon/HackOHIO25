@@ -3,7 +3,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor
-from db import *
+
 #TODO instead of taking paths, take in raw text of everything (from db)
 class AIGrader:
     def __init__(self):

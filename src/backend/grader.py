@@ -65,22 +65,28 @@ class AIGrader:
         return student_response.output_text
 
     def grade_submission(self, teacher_text: str, student_text: str) -> str:
-        """Grade the student's submission based on the teacher's answer key."""
+     
         grading_prompt = f"""
-
+   Grade the student's submission based on the teacher's answer key.
 
 You are an expert grader in the subject covered by this exam, with 20 years of experience grading midterms at the highest academic level. 
 Your goal is to replace teachers in providing fast, fair, and highly accurate grading.
 
+The teacher's answer key and the student's submission are provided below.
 Exam Key:
 {teacher_text}
 
 Student Submission:
 {student_text}
-Ensure that the point totals match the exam key.
-Instructions for Grading:
+Ensure that the point totals match the exam key. The point value of each question should be located the left of the question number and the right of the question. If point totals are missing however assume the exam is gradd out of 100. 
+Output the question point value for each question as you see it in the midterm.
+Correct answers with no support work may receive no credit. 
+Student answers must be exact unless otherwise specified in the question.
+
+For every question in the exam, to grade the student's answer, compare it directly to the same question in the teacher's answer key.
+Additional Instructions for Grading:
 1. Grade each question independently using the following criteria:
-   - Completeness: Check if the student answered all parts of the question. Award partial credit for incomplete but valid work.
+   - Completeness: Check if the student answered all parts of the question. Award partial credit for incomplete but valid work. Never award decimal points. 
    - Correctness: Verify if the student’s solution is mathematically, scientifically, or conceptually correct. Deduct points for errors, but give partial credit for partially correct reasoning or steps.
    - Simplification/Presentation: Evaluate clarity, organization, and whether the answer is simplified or neatly presented.
 
@@ -105,27 +111,10 @@ Instructions for Grading:
 6. Important:
    - Never skip grading a question.
    - Award partial credit where appropriate.
-   - Be fair, objective, and professional.
+   - Be fair, critical, and stingy with points.
    - Provide constructive feedback that the student can learn from.
 
-Output Example:
-
-Question 1:
-Completeness: 8/10 - Student answered all parts but missed step 3.
-Correctness: 7/10 - Minor calculation errors in step 2.
-Simplification/Presentation: 4/5 - Clear and organized, slight formatting issues.
-Comments: Overall good attempt; review step 2 calculations.
-
-Question 2:
-...
-
-Overall Feedback:
-- Strengths: Solid understanding of concepts, clear explanations.
-- Areas for Improvement: Double-check calculations, pay attention to formatting.
-- Summary Score: 35/40
-
-Grade the work as a senior instructor with decades of experience. 
-Provide detailed, stepwise, accurate scoring with partial credit wherever justified.
+   If the grade you assign is less than 50% of the total possible points, double-check your grading to ensure accuracy and fairness. Likewise, if the student has achieved a perfect score, verify that all answers are indeed correct.
 """
         print("Grading now...")
         grading_response = self.grader_client.responses.create(

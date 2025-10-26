@@ -34,6 +34,7 @@ For investors, Gradescope Reimagined represents a cutting-edge opportunity at th
 - **Frameworks/Libraries:** React, Vite  
 - **Languages:** HTML, CSS, JavaScript  
 
+![Screenshot](graiscope.png)
 ---
 
 ## 🚀 Getting Started

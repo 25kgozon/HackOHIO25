@@ -2,6 +2,8 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import db
+import json
+import re
 
 class AIGrader:
     def __init__(self):
@@ -63,6 +65,8 @@ class AIGrader:
     def grade_submission(self, teacher_text: str, student_text: str) -> str:
         """Grade the student's submission based on the teacher's answer key."""
         grading_prompt = f"""
+
+Only output valied json of this schema: {r'{score achieved: int, total_score: int, detailed_feedback: str}'}
 You are an expert grader in the subject covered by this exam, with 20 years of experience grading midterms at the highest academic level. 
 Your goal is to replace teachers in providing fast, fair, and highly accurate grading.
 
@@ -71,7 +75,7 @@ Exam Key:
 
 Student Submission:
 {student_text}
-
+Ensure that the point totals match the exam key.
 Instructions for Grading:
 1. Grade each question independently using the following criteria:
    - Completeness: Check if the student answered all parts of the question. Award partial credit for incomplete but valid work.
@@ -144,5 +148,12 @@ if __name__ == "__main__":
 
     # Grade submission
     final_grade = grader.grade_submission(teacher_text, student_text)
-    print("📊 Final Grade Output:\n")
+    print("Final Grade Output:\n")
     print(final_grade)
+
+    match = re.search(r"\{.*\}", final_grade, re.DOTALL)
+    if match:
+        data = json.loads(match.group())
+        print(data['score achieved'])
+    else:
+        print("Could not parse JSON from model output")

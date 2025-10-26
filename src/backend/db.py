@@ -582,7 +582,7 @@ class DB:
                 SET isRunning = B'1'
                 FROM cte
                 WHERE tt.id = cte.id
-                RETURNING tt.id, tt.task_type, tt.prompt_info, tt.texts
+                RETURNING tt.id, tt.task_type, tt.prompt_info, tt.texts, tt.files
                 """
             )
             row = cur.fetchone()
@@ -593,6 +593,7 @@ class DB:
                 "task_type": int(row[1]),
                 "prompt_info": self._maybe_json_load(row[2]),
                 "texts": row[3] or [],
+                "files": row[4]
             }
     def get_text_task(self, task_id: int) -> Optional[Dict[str, Any]]:
         with self._conn_cur() as (_, cur):

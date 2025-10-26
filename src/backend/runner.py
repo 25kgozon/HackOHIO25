@@ -89,11 +89,11 @@ def main():
     print("Starting event runner")
 
     with ThreadPoolExecutor(max_workers=WORKERS) as exec:
+        futures = []
         while True:
             file_event = db.dequeue_file_task()
             text_event = db.dequeue_text_task()
 
-            futures = []
 
             if file_event is not None:
                 futures.append(exec.submit(run_file_event, db, **file_event))
@@ -107,9 +107,7 @@ def main():
 
             # Wait for all tasks to finish
             for fut in futures:
-                while fut.running():
-                    time.sleep(1)
-                if fut.exception():
+                if not fut.running() and fut.exception():
                     traceback.print_exception(fut.exception())
             time.sleep(1)
 

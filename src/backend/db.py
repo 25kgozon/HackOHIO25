@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS user_results (
     id SERIAL PRIMARY KEY,
 
     student VARCHAR(254),
-    UUID student_copy
+     student_copy UUID
 );
 
 

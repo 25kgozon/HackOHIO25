@@ -57,7 +57,7 @@ class AIGrader:
                 }
             ],
         )
-        print("✅ Student file processed.\n")
+        print("Student file processed.\n")
         return student_response.output_text
 
     def grade_submission(self, teacher_text: str, student_text: str) -> str:
@@ -121,7 +121,7 @@ Overall Feedback:
 Grade the work as a senior instructor with decades of experience. 
 Provide detailed, stepwise, accurate scoring with partial credit wherever justified.
 """
-        print("🧮 Grading now...")
+        print("Grading now...")
         grading_response = self.grader_client.responses.create(
             model="gpt-5",
             input=[

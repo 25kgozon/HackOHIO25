@@ -158,7 +158,7 @@ const CoursesPage = () => {
                                         className="btn"
                                         onClick={() =>
                                             navigate(`/course/${course.id || course._id}`, {
-                                                state: { courseTitle: course.name, isTeacher },
+                                                state: { courseTitle: course.title, isTeacher },
                                             })
                                         }
                                     >

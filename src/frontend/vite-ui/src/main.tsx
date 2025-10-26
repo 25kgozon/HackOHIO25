@@ -28,7 +28,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/courses" element={<CoursesPage />} />
           <Route path="/course/:id" element={<CourseInfoPage />} />
-          <Route path="/course/:id/assignment/:assignmentTitle" element={<AssignmentPage />} />
+          <Route path="/course/:id/assignment/:assignmentId" element={<AssignmentPage />} />
           <Route path="/submissions" element={<SubmissionsPage />} />
           <Route path="/submissions/:submissionId" element={<SubmissionDetailsPage />} />
           <Route path="/grades" element={<GradesPage />} />

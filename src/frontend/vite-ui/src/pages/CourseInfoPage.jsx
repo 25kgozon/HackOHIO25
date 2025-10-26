@@ -206,7 +206,7 @@ const CourseInfoPage = () => {
                         <div className="assignment-cards">
                             {assignments[type].map((a) => (
                                 <div key={a.id} className={`assignment-card ${type}`}>
-                                    <div className="assignment-info" onClick={() => navigate(`/course/${id}/assignment/${a.title}`, { state: { courseTitle, assignmentDetails: a } })}>
+                                    <div className="assignment-info" onClick={() => navigate(`/course/${id}/assignment/${a.id}`, { state: { courseTitle, assignmentDetails: a } })}>
                                         <strong>{a.title}</strong>
                                         <p>{type === "upcoming" ? `Due: ${a.due}` : `Grade: ${a.grade || "TBD"}`}</p>
                                     </div>

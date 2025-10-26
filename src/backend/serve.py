@@ -11,7 +11,7 @@ import os
 from flask import Flask, make_response, redirect, session, jsonify, request
 from authlib.integrations.flask_client import OAuth
 
-from db import DB, FileRole, UserRole
+from db import *
 from s3 import *
 
 db = DB()
@@ -262,8 +262,10 @@ def create_student_file():
     user = session.get('user')
     if not user:
         return jsonify({"logged_in": False}, 401)
+    
+    data = request.get_json()
 
-    fid = db.create_file(user["sub"], "student.pdf", FileRole.STUDENT_RESPONSE, "")
+    fid = db.create_file(user["sub"], "student.pdf", FileRole.STUDENT_RESPONSE,UUID(data["assignment"]), "")
     return jsonify({"id": fid})  # <-- wrap in dict
 
 @app.route("/api/create_teacher_file", methods=["POST"])
@@ -272,7 +274,9 @@ def create_teacher_file():
     if not user:
         return jsonify({"logged_in": False}), 401
 
-    fid = db.create_file(user["sub"], "teacher.pdf", FileRole.TEACHER_KEY, "")
+    data = request.get_json()
+
+    fid = db.create_file(user["sub"], "teacher.pdf", FileRole.TEACHER_KEY, UUID(data["assignment"]), "")
     return jsonify({"id": fid})  # <-- wrap in dict with "id"
 
 
@@ -282,7 +286,8 @@ def create_teacher_file():
 def upload_to_s3(path):
     if "file" not in request.files:
         return jsonify({"error": "No file part"}), 400
-    if db.get_file(path) is None:
+    dbfile = db.get_file(path)
+    if dbfile is None:
         return jsonify({"error": "No such file exists"}), 404
 
     file = request.files["file"]
@@ -294,6 +299,14 @@ def upload_to_s3(path):
         BUCKET,
         path  # use path here, not 'key'
     )
+
+
+
+    db.enqueue_file_task(TaskType.OCR, [path], "{}")
+    
+    if dbfile["role"] == FileRole.STUDENT_RESPONSE.value:
+        db.enqueue_text_task(TaskType.SUMMARIZE, [])
+    
 
     return jsonify({"message": "Upload successful", "url": generate_download_url(path)})
 

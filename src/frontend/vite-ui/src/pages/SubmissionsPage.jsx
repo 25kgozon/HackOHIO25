@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
+import { useUser } from "../context/UserContext";
 import "../styles/SubmissionsPage.css";
 
 // Sample submitted assignments data
@@ -27,12 +28,27 @@ const SubmissionsPage = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [activeSection, setActiveSection] = useState("Submissions");
     const navigate = useNavigate();
+    const { user } = useUser(); // ✅ get logged-in user
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
     const handleNavigate = (section) => {
         setActiveSection(section);
         setIsSidebarOpen(false);
     };
+
+    // Determine if the user is a student
+    const isStudent = user?.role === "student";
+
+    // If student, filter + replace names with user's own name
+    const displayedAssignments = isStudent
+        ? submittedAssignments.map(course => ({
+            ...course,
+            submissions: course.submissions.map(sub => ({
+                ...sub,
+                student: user.name, // replace all names with logged-in student's name
+            })),
+        }))
+        : submittedAssignments;
 
     return (
         <div className="main-page">
@@ -51,15 +67,12 @@ const SubmissionsPage = () => {
                 <h2 className="page-title">{activeSection}</h2>
 
                 <div className="submissions-section">
-                    {submittedAssignments.map((course) => (
+                    {displayedAssignments.map((course) => (
                         <div key={course.courseId} className="course-section">
                             <h3 className="course-title">{course.courseTitle}</h3>
                             <div className="submission-cards">
                                 {course.submissions.map((sub) => (
-                                    <div
-                                        key={sub.id}
-                                        className="submission-card"
-                                    >
+                                    <div key={sub.id} className="submission-card">
                                         <div>
                                             <strong>{sub.title}</strong> - {sub.student}
                                         </div>

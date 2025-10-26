@@ -3,7 +3,7 @@ import "../styles/SettingsPage.css";
 
 const SettingsPage = () => {
     const handleDeleteClick = () => {
-        alert("Database deletion simulated. (This button does nothing… for now 😈)");
+        alert("Database deleted!");
     };
 
     return (

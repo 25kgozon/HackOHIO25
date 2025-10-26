@@ -10,7 +10,6 @@ const GradesPage = () => {
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-    // Mock grades grouped by course
     useEffect(() => {
         const mockGrades = [
             {
@@ -28,20 +27,35 @@ const GradesPage = () => {
                 ],
             },
         ];
-        setGradesByCourse(mockGrades);
-    }, []);
+
+        // If student, replace names with user's name
+        if (user?.role === "student") {
+            const studentGrades = mockGrades.map((course) => ({
+                ...course,
+                students: course.students.map((s) => ({
+                    ...s,
+                    name: user.name, // show the logged-in student's name
+                })),
+            }));
+            setGradesByCourse(studentGrades);
+        } else {
+            setGradesByCourse(mockGrades);
+        }
+    }, [user]);
 
     return (
         <div className="grades-page">
             <header className="main-header">
                 <button className="menu-btn" onClick={toggleSidebar}>☰</button>
-                <h1 className="title-text iridescent">Student Grades</h1>
+                <h1 className="title-text iridescent">
+                    {user?.role === "teacher" ? "Student Grades" : "My Grades"}
+                </h1>
             </header>
 
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             <main className="grades-content fade-in">
-                <h2>Grades Overview</h2>
+                <h2>{user?.role === "teacher" ? "Grades Overview" : "Grades Summary"}</h2>
 
                 {gradesByCourse.map((course, idx) => (
                     <div key={idx} className="course-section">

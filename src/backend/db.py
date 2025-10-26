@@ -263,9 +263,9 @@ class DB:
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
-                DELETE FROME classes WHERE id=%s
+                DELETE FROM classes WHERE id=%s
                 """,
-                (classid),
+                (classid, ),
             )
 
 

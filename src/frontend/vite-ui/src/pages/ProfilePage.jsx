@@ -33,7 +33,7 @@ const ProfilePage = () => {
             {/* Header */}
             <header className="main-header">
                 <button className="menu-btn" onClick={toggleSidebar}>☰</button>
-                <h1 className="title-text">Profile</h1>
+                <h1 className="title-text">GrAIdescope | Profile</h1>
             </header>
 
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />

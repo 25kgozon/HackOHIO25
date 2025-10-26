@@ -222,3 +222,9 @@
     /* keeps buttons responsive on small screens */
     margin-bottom: 1rem;
 }
+
+.popup-box.small-box {
+    width: 380px;
+    max-width: 90%;
+    padding: 18px;
+}

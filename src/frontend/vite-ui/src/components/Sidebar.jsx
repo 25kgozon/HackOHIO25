@@ -35,8 +35,8 @@ const Sidebar = ({ isOpen, onClose, isLoggedIn }) => {
 
         {/* Menu items */}
         <ul className="sidebarMenu">
-          <li onClick={() => handleNavigate("/")}>👤 Login / Profile</li>
-          <li onClick={() => handleNavigate("/main-page")}>🏠 Assignments</li>
+          <li onClick={() => handleNavigate("/")}>👤 Profile</li>
+          <li onClick={() => handleNavigate("/main-page")}>🏠 Dashboard</li>
           <li onClick={() => handleNavigate("/courses")}>📚 Courses</li>
           <li onClick={() => handleNavigate("/submissions")}>📤 Submissions</li>
           <li onClick={() => handleNavigate("/grades")}>📊 Grades</li>

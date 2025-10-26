@@ -9,7 +9,6 @@ const AssignmentPage = () => {
     const { id, assignmentTitle } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
-
     const { user } = useUser();
     const isTeacher = user?.role === "teacher";
 
@@ -17,56 +16,83 @@ const AssignmentPage = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // ---------- Student Upload ----------
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [pdfUrl, setPdfUrl] = useState(null);
+    const [studentFile, setStudentFile] = useState(null);
+    const [studentPdfUrl, setStudentPdfUrl] = useState(null);
 
-    const handleFileChange = (e) => {
+    const handleStudentFileChange = (e) => {
         const file = e.target.files[0];
         if (file && file.type === "application/pdf") {
-            setSelectedFile(file);
-            setPdfUrl(URL.createObjectURL(file));
+            setStudentFile(file);
+            setStudentPdfUrl(URL.createObjectURL(file));
         } else alert("Please select a PDF file.");
     };
 
-    const handleUpload = () => {
-        if (!selectedFile) return alert("No file selected.");
-        alert(`File "${selectedFile.name}" ready to upload!`);
-        setSelectedFile(null);
-        setPdfUrl(null);
+    const handleStudentUpload = async () => {
+        if (!studentFile) return alert("No file selected.");
+
+        try {
+            const formData = new FormData();
+            formData.append("file", studentFile);
+
+            const res = await fetch("/api/upload", { method: "POST", body: formData });
+            if (!res.ok) throw new Error("Upload failed");
+
+            const data = await res.json();
+            console.log("Student PDF uploaded, URL:", data.url);
+            alert(`Student PDF uploaded! Check console for URL.`);
+
+            setStudentFile(null);
+            setStudentPdfUrl(null);
+        } catch (err) {
+            console.error(err);
+            alert(err.message);
+        }
     };
 
     // ---------- Teacher Upload ----------
-    const [answerKeyFile, setAnswerKeyFile] = useState(null);
-    const [answerKeyUrl, setAnswerKeyUrl] = useState(null);
+    const [teacherFile, setTeacherFile] = useState(null);
+    const [teacherPdfUrl, setTeacherPdfUrl] = useState(null);
 
-    const handleAnswerKeyChange = (e) => {
+    const handleTeacherFileChange = (e) => {
         const file = e.target.files[0];
         if (file && file.type === "application/pdf") {
-            setAnswerKeyFile(file);
-            setAnswerKeyUrl(URL.createObjectURL(file));
+            setTeacherFile(file);
+            setTeacherPdfUrl(URL.createObjectURL(file));
         } else alert("Please select a PDF file.");
     };
 
-    const handleAnswerKeyUpload = () => {
-        if (!answerKeyFile) return alert("No file selected.");
-        alert(`Answer key "${answerKeyFile.name}" ready to upload!`);
-        setAnswerKeyFile(null);
-        setAnswerKeyUrl(null);
+    const handleTeacherUpload = async () => {
+        if (!teacherFile) return alert("No file selected.");
+
+        try {
+            const formData = new FormData();
+            formData.append("file", teacherFile);
+
+            const res = await fetch("/api/upload", { method: "POST", body: formData });
+            if (!res.ok) throw new Error("Upload failed");
+
+            const data = await res.json();
+            console.log("Answer Key uploaded, URL:", data.url);
+            alert(`Answer Key uploaded! Check console for URL.`);
+
+            setTeacherFile(null);
+            setTeacherPdfUrl(null);
+        } catch (err) {
+            console.error(err);
+            alert(err.message);
+        }
     };
 
     // ---------- AI Instructions ----------
     const [aiInstructions, setAiInstructions] = useState("");
     const [showAiInstructions, setShowAiInstructions] = useState(false);
-
     const toggleAiInstructions = () => setShowAiInstructions(!showAiInstructions);
-
     const handleSaveAiInstructions = () => {
         console.log("AI Instructions saved:", aiInstructions);
         alert("AI Instructions saved! Check console.");
         setShowAiInstructions(false);
     };
 
-    // ---------- Sidebar ----------
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
     return (
@@ -114,15 +140,15 @@ const AssignmentPage = () => {
                             accept="application/pdf"
                             id="studentFileInput"
                             style={{ display: "none" }}
-                            onChange={handleFileChange}
+                            onChange={handleStudentFileChange}
                         />
                         <button className="btn" onClick={() => document.getElementById("studentFileInput").click()}>
                             Select PDF
                         </button>
-                        {pdfUrl && (
-                            <iframe src={pdfUrl} width="100%" height="600px" title="PDF Preview" />
-                        )}
-                        <button className="btn" onClick={handleUpload} disabled={!selectedFile}>Upload PDF</button>
+                        {studentPdfUrl && <iframe src={studentPdfUrl} width="100%" height="600px" title="Student PDF Preview" />}
+                        <button className="btn" onClick={handleStudentUpload} disabled={!studentFile}>
+                            Upload PDF
+                        </button>
                     </div>
                 )}
 
@@ -134,14 +160,14 @@ const AssignmentPage = () => {
                             <input
                                 type="file"
                                 accept="application/pdf"
-                                id="answerKeyInput"
+                                id="teacherFileInput"
                                 style={{ display: "none" }}
-                                onChange={handleAnswerKeyChange}
+                                onChange={handleTeacherFileChange}
                             />
-                            <button className="btn" onClick={() => document.getElementById("answerKeyInput").click()}>
+                            <button className="btn" onClick={() => document.getElementById("teacherFileInput").click()}>
                                 Select PDF
                             </button>
-                            <button className="btn" onClick={handleAnswerKeyUpload} disabled={!answerKeyFile}>
+                            <button className="btn" onClick={handleTeacherUpload} disabled={!teacherFile}>
                                 Upload Answer Key
                             </button>
                             <button className="btn" onClick={toggleAiInstructions}>
@@ -149,9 +175,7 @@ const AssignmentPage = () => {
                             </button>
                         </div>
 
-                        {answerKeyUrl && (
-                            <iframe src={answerKeyUrl} width="100%" height="600px" title="Answer Key Preview" />
-                        )}
+                        {teacherPdfUrl && <iframe src={teacherPdfUrl} width="100%" height="600px" title="Answer Key Preview" />}
 
                         {/* Rubric */}
                         <Rubric />

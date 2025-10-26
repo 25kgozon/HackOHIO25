@@ -75,7 +75,7 @@ if __name__ == "__main__":
     sim_ocr_task(teacher_fid)
     sim_ocr_task(student_fid)
 
-    print("\n✅ OCR tasks queued. Now run:")
+    print("\n OCR tasks queued. Now run:")
     print("   python runner.py")
     print("to process both files and cache their text.\n")
 

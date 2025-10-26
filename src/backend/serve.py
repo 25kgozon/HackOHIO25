@@ -1,10 +1,13 @@
-import os
-from flask import Flask, make_response, redirect, session, jsonify, request
-from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 
 # Load environment variables from .env
 load_dotenv()
+
+
+import os
+from flask import Flask, make_response, redirect, session, jsonify, request
+from authlib.integrations.flask_client import OAuth
+
 
 app = Flask(__name__)
 app.secret_key = os.getenv("flask_key", "supersecretkey")  # Replace with a secure key in production

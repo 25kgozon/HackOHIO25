@@ -1,5 +1,6 @@
 from boto3.docs import method
 from dotenv import load_dotenv
+from pydantic import NonPositiveInt
 
 # Load environment variables from .env
 load_dotenv()
@@ -103,6 +104,24 @@ def get_classes():
     if not user:
         return jsonify({"logged_in": False}, 401)
     return jsonify(db.get_user_classes(user["sub"]))
+
+
+@app.route("/api/join_class", methods=["POST"])
+def join_class():
+    user = session.get('user')
+    if not user:
+         return jsonify({"logged_in": False}, 401)
+    if user["role"] != "teacher":
+        return jsonify({"error": "Not a student"}, 401)
+    
+    data = request.get_json()
+
+    if db.join_class_by_code(user["sub"], data["code"]) is None:
+        return jsonify({"status": "error"})
+    else:
+        return jsonify({"status": "ok"})
+
+
 
 @app.route("/api/create_class", methods=["POST"])
 def create_class():

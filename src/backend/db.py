@@ -1,4 +1,4 @@
-import os
+import os, random
 from uuid import UUID
 import enum
 import json
@@ -58,6 +58,9 @@ CREATE TABLE IF NOT EXISTS classes (
     owner VARCHAR(254),
     name TEXT,
     description TEXT,
+    
+    joinCode INT UNIQUE,
+
     assignments UUID[]
 );
 
@@ -297,16 +300,24 @@ class DB:
             name : str, 
             description : str):
         with self._conn_cur() as (_, cur):
-            cur.execute(
-                """
-                INSERT INTO classes (owner, name, description, assignments)
-                VALUES (%s, %s, %s, %s::uuid[])
-                RETURNING id
-                """,
-                (owner_user, name, description, []),
-            )
-            (fid,) = cur.fetchone()
-            return str(fid)
+
+            for _ in range(99999999):
+                try:
+                    rand_code = random.randint(100000, 999999)
+                    cur.execute(
+                        """
+                        INSERT INTO classes (owner, joinCode, name, description, assignments)
+                        VALUES (%s, %s, %s, %s, %s::uuid[])
+                        RETURNING id
+                        """,
+                        (owner_user, rand_code, name, description, []),
+                    )
+                    (fid,) = cur.fetchone()
+                    return str(fid)
+                except psycopg2.errors.UniqueViolation:
+                    # collision on random code → retry
+                    cur.connection.rollback()
+                    continue
     def get_user_classes(self, openid: str) -> List[Dict[str, Any]]:
         """
         Return all class metadata (id, name, description, owner)
@@ -315,7 +326,7 @@ class DB:
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
-                SELECT c.id, c.name, c.description, c.owner
+                SELECT c.id, c.name, c.description, c.owner, c.joinCode
                 FROM users u
                 JOIN LATERAL unnest(u.classes) AS class_id ON TRUE
                 JOIN classes c ON c.id = class_id
@@ -332,6 +343,7 @@ class DB:
                         "name": r[1],
                         "description": r[2],
                         "owner": r[3],
+                        "join code": r[4]
                     }
                 )
             return out

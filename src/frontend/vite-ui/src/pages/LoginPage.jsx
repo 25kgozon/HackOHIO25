@@ -34,7 +34,7 @@ const LoginPage = () => {
 
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-      <div className="login-card card fade-in">
+      <div className="login-card fade-in">
         <h1 className="iridescent">Login</h1>
 
         {!user && (

@@ -59,6 +59,8 @@ class AIGrader:
                 }
             ],
         )
+        #Only output valied json of this schema: 
+        #{r'{score achieved: int, total_score: int, detailed_feedback: str}'}
         print("Student file processed.\n")
         return student_response.output_text
 
@@ -66,7 +68,7 @@ class AIGrader:
         """Grade the student's submission based on the teacher's answer key."""
         grading_prompt = f"""
 
-Only output valied json of this schema: {r'{score achieved: int, total_score: int, detailed_feedback: str}'}
+
 You are an expert grader in the subject covered by this exam, with 20 years of experience grading midterms at the highest academic level. 
 Your goal is to replace teachers in providing fast, fair, and highly accurate grading.
 
@@ -150,10 +152,12 @@ if __name__ == "__main__":
     final_grade = grader.grade_submission(teacher_text, student_text)
     print("Final Grade Output:\n")
     print(final_grade)
-
+"""""
     match = re.search(r"\{.*\}", final_grade, re.DOTALL)
     if match:
         data = json.loads(match.group())
         print(data['score achieved'])
     else:
         print("Could not parse JSON from model output")
+"""
+    

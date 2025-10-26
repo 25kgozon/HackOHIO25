@@ -47,6 +47,9 @@ Outcome: The exploration directly improved usability, data flow, and OCR precisi
 
 
 ---
+## Metrics
+![Screenshot](images/graiscope.png)
+
 
 ## 🛠 Technology Stack
 
@@ -61,7 +64,7 @@ Outcome: The exploration directly improved usability, data flow, and OCR precisi
 - **Frameworks/Libraries:** React, Vite  
 - **Languages:** HTML, CSS, JavaScript  
 
-![Screenshot](graiscope.png)
+
 ---
 
 ## 🚀 Getting Started

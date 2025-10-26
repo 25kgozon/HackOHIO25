@@ -312,6 +312,17 @@ def upload_to_s3(path):
 
 
 
+@app.route("/api/submission/<path:path>")
+def get_sub(path):
+    user = session.get('user')
+    if not user:
+        return jsonify({"logged_in": False}), 401
+
+
+    return db.get_file_by_user_on_assignment(user["sub"], UUID(path))
+
+
+
 
 if __name__ == "__main__":
     # Use host=0.0.0.0 if testing in Docker or remote VM

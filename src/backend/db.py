@@ -356,6 +356,36 @@ class DB:
             return out
 
 
+    def get_file_by_user_on_assignment(
+        self,
+        user: str,
+        assignment: UUID
+    ) -> List[Dict[str, Any]]:
+        """
+        Return all files for a given user on a specific assignment.
+        """
+        with self._conn_cur() as (_, cur):
+            cur.execute(
+                """
+                SELECT id, posted_user, file_name, file_role, context
+                FROM files
+                WHERE posted_user = %s AND file_assignment = %s
+                """,
+                (user, assignment),
+            )
+            rows = cur.fetchall()
+            out: List[Dict[str, Any]] = []
+            for r in rows:
+                out.append(
+                    {
+                        "id": str(r[0]),
+                        "posted_user": r[1],
+                        "file_name": r[2],
+                        "file_role": r[3],
+                        "context": self._maybe_json_load(r[4]),
+                    }
+                )
+            return out
     def get_file(self, file_id: str) -> Optional[Dict[str, Any]]:
         with self._conn_cur() as (_, cur):
             cur.execute(

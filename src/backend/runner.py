@@ -45,28 +45,59 @@ def run_file_event(db : DB, id : int, task_type : int, prompt_info : dict, files
         db.set_file_cache(initial, out)
 
 
+def run_text_event(db: DB, id: int, task_type: int, prompt_info: dict, texts: list[str]):
+    """
+    Process text tasks, similar to file tasks.
+    """
+    grader = AIGrader()
+
+    #print("asdasdsads")
+    
+    # Combine texts into one string (or handle separately depending on task_type)
+    combined_text = "\n\n".join(texts)
+
+    # Example: if this is a "summarize" task
+    if task_type == TaskType.SUMMARIZE.value:
+        # For simplicity, just wrap in a grader method (you could implement a dedicated one)
+        out = combined_text  # replace with actual call if needed
+    else:
+        out = combined_text  # placeholder
+
+    # Store result in cache keyed by task id
+   
+    db.complete_text_task(id)
+
+
+
 
 def main():
     db: DB = DB()
-    # Todo: Make list
-    running: Future
-
     print("Starting event runner")
 
     with ThreadPoolExecutor(max_workers=WORKERS) as exec:
-        event = db.dequeue_file_task()
-        if event is not None:
-            running = exec.submit(run_file_event, db, **event)
-        else:
-            print("No task")
-            return
-        while running.running():
-            time.sleep(1)
-        if running.exception():
-            traceback.print_exception(running.exception())
-    
+        # 1. Dequeue a file task
+        file_event = db.dequeue_file_task()
+        text_event = db.dequeue_text_task()
 
-    
+        futures = []
+
+        if file_event is not None:
+            futures.append(exec.submit(run_file_event, db, **file_event))
+        else:
+            print("No file tasks in queue")
+
+        if text_event is not None:
+            futures.append(exec.submit(run_text_event, db, **text_event))
+        else:
+            print("No text tasks in queue")
+
+        # Wait for all futures to finish
+        for fut in futures:
+            while fut.running():
+                time.sleep(1)
+            if fut.exception():
+                traceback.print_exception(fut.exception())
+
 
 
 

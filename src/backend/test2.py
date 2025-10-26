@@ -57,20 +57,22 @@ def sim_ocr_task(fid: str):
 # print(db.get_class_assignments(UUID("3829cf32-2a91-4eeb-a7f7-68a622d485f7")))
 if __name__ == "__main__":
     # Replace with your actual paths
-    teacher_pdf = "/Users/kgozon/HackOHIO25/src/backend/uploads/midterm 1 - calc iii.pdf"
-    student_pdf = "/Users/kgozon/HackOHIO25/src/backend/uploads/midterm1_solution.pdf"
+    teacher_pdf = "src/backend/uploads/midterm 1 - calc iii.pdf"
+    student_pdf = "src/backend/uploads/midterm1_solution.pdf"
 
     user = "admin"
 
     # STEP 1: Upload both teacher and student files
-    teacher_fid = sim_teacher_upload(user, teacher_pdf)
-    student_fid = sim_student_upload(user, student_pdf)
+    #teacher_fid = sim_teacher_upload(user, teacher_pdf)
+    #student_fid = sim_student_upload(user, student_pdf)
 
-    sim_ocr_task(teacher_fid)
-    sim_ocr_task(student_fid)
+    #sim_ocr_task(teacher_fid)
+    #sim_ocr_task(student_fid)
 
 
-    #db.enqueue_text_task(TaskType.SUMMARIZE, [], [UUID(teacher_fid)], "")
+    db.join_class_by_code("112310821665761322162", 911551)
+    #db.enqueue_text_task(TaskType.SUMMARIZE, [], [UUID("1212ca92-41a9-4d39-8a06-1bbb6bfd72c6"), UUID("30d46613-545c-4607-b8ce-1320e5ea23b5")], "")
+    
     #db.enqueue_text_task(TaskType.SUMMARIZE, [], [UUID(student_fid)], "")
 
 

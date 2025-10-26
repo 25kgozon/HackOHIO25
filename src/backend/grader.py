@@ -35,7 +35,7 @@ class AIGrader:
                 }
             ],
         )
-        print("✅ Teacher file processed.\n")
+        print("Teacher file processed.\n")
         return teacher_response.output_text
 
     def read_student_file(self, file_path: str) -> str:
@@ -63,7 +63,7 @@ class AIGrader:
     def grade_submission(self, teacher_text: str, student_text: str) -> str:
         """Grade the student's submission based on the teacher's answer key."""
         grading_prompt = f"""
-You are an expert Calculus III grader.
+You are an expert grader in whatever the subject this exam covers. 
 Use the following exam key and student answers to grade the work fairly according to the detailed rubric.
 
 Exam Key:

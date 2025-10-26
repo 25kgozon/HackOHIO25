@@ -82,6 +82,8 @@ CREATE TABLE IF NOT EXISTS files (
     posted_user VARCHAR(254),
     file_name TEXT,
     file_role INT, -- FileRole
+    
+    file_assignment UUID,
     context TEXT
 );
 
@@ -285,17 +287,18 @@ class DB:
         posted_user: Optional[str],
         file_name : str,
         file_role: FileRole,
+        assignment : UUID,
         context: Optional[Any] = None,
     ) -> str:
         context_txt = self._maybe_json_dump(context)
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
-                INSERT INTO files (posted_user, file_name, file_role, context)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO files (posted_user, file_name, file_role, file_assignment, context)
+                VALUES (%s, %s, %s, %s, %s)
                 RETURNING id
                 """,
-                (posted_user, file_name, file_role.value, context_txt),
+                (posted_user, file_name, file_role.value, assignment, context_txt),
             )
             (fid,) = cur.fetchone()
             return str(fid)
@@ -374,6 +377,17 @@ class DB:
                 "file_role": row[3],
                 "context": ctx,
             }
+    def join_class_by_code(self, user_id : str, code : int):
+        with self._conn_cur() as (_, cur):
+            cur.execute("SELECT id FROM classes WHERE joinCode=%s LIMIT 1", (code, ))
+            row = cur.fetchone()
+            if not row:
+                return None
+            print(row)
+            cur.execute("UPDATE users SET classes = classes || %s WHERE openid=%s", (row[0], user_id))
+
+            return row[0]
+
 
     def delete_file(self, file_id: str) -> bool:
         with self._conn_cur() as (_, cur):

@@ -14,12 +14,11 @@ const CourseInfoPage = () => {
     const courseTitle = location.state?.courseTitle || `Course #${id}`;
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    const [assignments, setAssignments] = useState({
-        upcoming: [],
-        graded: [],
-    });
+    const [assignments, setAssignments] = useState({ upcoming: [], graded: [] });
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editAssignment, setEditAssignment] = useState(null);
 
-    const [showModal, setShowModal] = useState(false);
     const [newAssignmentName, setNewAssignmentName] = useState("");
     const [newAssignmentDue, setNewAssignmentDue] = useState("");
     const [newAssignmentFile, setNewAssignmentFile] = useState(null);
@@ -37,20 +36,16 @@ const CourseInfoPage = () => {
                 credentials: "include",
                 body: JSON.stringify({ "class id": id }),
             });
-
             if (!res.ok) throw new Error("Failed to fetch assignments");
-
             const data = await res.json();
-
             const mappedAssignments = data.map((a) => ({
                 id: a.id,
                 title: a.name,
                 description: a.description,
                 attrs: a.attrs,
-                due: a.attrs?.due || "TBD", // <-- read from attrs
+                due: a.attrs?.due || "TBD",
                 graded: a.graded || false,
             }));
-
             setAssignments({
                 upcoming: mappedAssignments.filter((a) => !a.graded),
                 graded: mappedAssignments.filter((a) => a.graded),
@@ -65,11 +60,10 @@ const CourseInfoPage = () => {
     }, [id]);
 
     // ---------------------------
-    // Create a new assignment
+    // Create assignment
     // ---------------------------
     const createAssignment = async () => {
         if (!newAssignmentName.trim()) return alert("Enter an assignment name!");
-
         try {
             const res = await fetch("/api/create_assignment", {
                 method: "POST",
@@ -79,27 +73,18 @@ const CourseInfoPage = () => {
                     class_id: id,
                     "ass name": newAssignmentName,
                     "ass desc": "",
-                    "ass attrs": {
-                        due: newAssignmentDue || "TBD", // <-- store due date here
-                    },
+                    "ass attrs": { due: newAssignmentDue || "TBD" },
                     "ass grade info": {},
                     context: "",
                 }),
             });
-
             if (!res.ok) throw new Error("Failed to create assignment");
-
-            const data = await res.json();
-            console.log("Created assignment:", data);
-
-            // Refresh assignments list
-            await fetchAssignments();
-
-            // Reset modal fields
+            await res.json();
+            fetchAssignments();
             setNewAssignmentName("");
             setNewAssignmentDue("");
             setNewAssignmentFile(null);
-            setShowModal(false);
+            setShowCreateModal(false);
         } catch (err) {
             console.error(err);
             alert("Failed to create assignment");
@@ -107,29 +92,62 @@ const CourseInfoPage = () => {
     };
 
     // ---------------------------
-    // Delete class
+    // Delete assignment
     // ---------------------------
-    const deleteClass = async () => {
-        if (!window.confirm(`Are you sure you want to delete "${courseTitle}"?`)) return;
-
+    const deleteAssignment = async (assignmentId) => {
+        if (!window.confirm("Are you sure you want to delete this assignment?")) return;
         try {
-            const res = await fetch("/api/delete_class", {
+            const res = await fetch("/api/delete_assignment", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ id }),
+                body: JSON.stringify({ "class id": id, "assignment id": assignmentId }),
             });
-
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error || "Failed to delete class");
-            }
-
-            alert("Class deleted successfully!");
-            navigate("/courses");
+            if (!res.ok) throw new Error("Failed to delete assignment");
+            await res.json();
+            fetchAssignments();
         } catch (err) {
             console.error(err);
-            alert(err.message);
+            alert("Failed to delete assignment");
+        }
+    };
+
+    // ---------------------------
+    // Open edit modal
+    // ---------------------------
+    const openEditModal = (assignment) => {
+        setEditAssignment(assignment);
+        setNewAssignmentName(assignment.title);
+        setNewAssignmentDue(assignment.due !== "TBD" ? assignment.due : "");
+        setShowEditModal(true);
+    };
+
+    // ---------------------------
+    // Update assignment
+    // ---------------------------
+    const updateAssignment = async () => {
+        if (!editAssignment) return;
+        try {
+            const res = await fetch("/api/update_assignment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                    "assignment id": editAssignment.id,
+                    name: newAssignmentName,
+                    attrs: { ...editAssignment.attrs, due: newAssignmentDue || "TBD" },
+                }),
+            });
+            if (!res.ok) throw new Error("Failed to update assignment");
+            await res.json();
+            fetchAssignments();
+            setShowEditModal(false);
+            setEditAssignment(null);
+            setNewAssignmentName("");
+            setNewAssignmentDue("");
+        } catch (err) {
+            console.error(err);
+            alert("Failed to update assignment");
         }
     };
 
@@ -153,87 +171,61 @@ const CourseInfoPage = () => {
                     <h2 className="course-title iridescent">{courseTitle}</h2>
                     {isTeacher && (
                         <div className="course-actions">
-                            <button className="btn" onClick={() => setShowModal(true)}>Add Assignment</button>
-                            <button className="btn danger" onClick={deleteClass}>Delete Class</button>
+                            <button className="btn" onClick={() => setShowCreateModal(true)}>Add Assignment</button>
                         </div>
                     )}
                 </div>
 
-                {/* Upcoming Assignments */}
-                <section className="assignments-section">
-                    <h3>Upcoming Assignments</h3>
-                    <div className="assignment-cards">
-                        {assignments.upcoming.map((a) => (
-                            <div key={a.id} className="assignment-card upcoming">
-                                <div
-                                    className="assignment-info"
-                                    onClick={() =>
-                                        navigate(`/course/${id}/assignment/${a.title}`, {
-                                            state: { courseTitle, assignmentDetails: a },
-                                        })
-                                    }
-                                >
-                                    <strong>{a.title}</strong>
-                                    <p>Due: {a.due}</p>
-                                </div>
-                                {isTeacher && (
-                                    <div className="assignment-actions">
-                                        <button className="btn small" onClick={() => alert(`Edit ${a.title}`)}>Edit</button>
-                                        <button className="btn small danger" onClick={() => alert(`Delete ${a.title}`)}>Delete</button>
+                {/* Assignments */}
+                {["upcoming", "graded"].map((type) => (
+                    <section key={type} className="assignments-section">
+                        <h3>{type === "upcoming" ? "Upcoming Assignments" : "Graded Assignments"}</h3>
+                        <div className="assignment-cards">
+                            {assignments[type].map((a) => (
+                                <div key={a.id} className={`assignment-card ${type}`}>
+                                    <div className="assignment-info" onClick={() => navigate(`/course/${id}/assignment/${a.title}`, { state: { courseTitle, assignmentDetails: a } })}>
+                                        <strong>{a.title}</strong>
+                                        <p>{type === "upcoming" ? `Due: ${a.due}` : `Grade: ${a.grade || "TBD"}`}</p>
                                     </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </section>
-
-                {/* Graded Assignments */}
-                <section className="assignments-section">
-                    <h3>Graded Assignments</h3>
-                    <div className="assignment-cards">
-                        {assignments.graded.map((a) => (
-                            <div key={a.id} className="assignment-card graded">
-                                <div className="assignment-info">
-                                    <strong>{a.title}</strong>
-                                    <p>Grade: {a.grade || "TBD"}</p>
+                                    {isTeacher && (
+                                        <div className="assignment-actions">
+                                            <button className="btn small" onClick={() => openEditModal(a)}>Edit</button>
+                                            <button className="btn small danger" onClick={() => deleteAssignment(a.id)}>Delete</button>
+                                        </div>
+                                    )}
                                 </div>
-                                {isTeacher && (
-                                    <div className="assignment-actions">
-                                        <button className="btn small" onClick={() => alert(`Edit ${a.title}`)}>Edit</button>
-                                        <button className="btn small danger" onClick={() => alert(`Delete ${a.title}`)}>Delete</button>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </section>
+                            ))}
+                        </div>
+                    </section>
+                ))}
 
                 {/* Create Assignment Modal */}
-                {showModal && (
+                {showCreateModal && (
                     <div className="modal-overlay">
                         <div className="modal-content fade-in">
                             <h3>Create Assignment</h3>
-                            <input
-                                type="text"
-                                placeholder="Assignment Name"
-                                value={newAssignmentName}
-                                onChange={(e) => setNewAssignmentName(e.target.value)}
-                            />
-                            <input
-                                type="date"
-                                placeholder="Due Date"
-                                value={newAssignmentDue}
-                                onChange={(e) => setNewAssignmentDue(e.target.value)}
-                            />
-                            <input
-                                type="file"
-                                accept="application/pdf"
-                                onChange={handleFileChange}
-                            />
+                            <input type="text" placeholder="Assignment Name" value={newAssignmentName} onChange={(e) => setNewAssignmentName(e.target.value)} />
+                            <input type="date" placeholder="Due Date" value={newAssignmentDue} onChange={(e) => setNewAssignmentDue(e.target.value)} />
+                            <input type="file" accept="application/pdf" onChange={handleFileChange} />
                             {newAssignmentFile && <p>Selected File: {newAssignmentFile.name}</p>}
                             <div className="modal-buttons">
                                 <button className="btn" onClick={createAssignment}>Create</button>
-                                <button className="btn" onClick={() => setShowModal(false)}>Cancel</button>
+                                <button className="btn" onClick={() => setShowCreateModal(false)}>Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Edit Assignment Modal */}
+                {showEditModal && (
+                    <div className="modal-overlay">
+                        <div className="modal-content fade-in">
+                            <h3>Edit Assignment</h3>
+                            <input type="text" placeholder="Assignment Name" value={newAssignmentName} onChange={(e) => setNewAssignmentName(e.target.value)} />
+                            <input type="date" placeholder="Due Date" value={newAssignmentDue} onChange={(e) => setNewAssignmentDue(e.target.value)} />
+                            <div className="modal-buttons">
+                                <button className="btn" onClick={updateAssignment}>Save</button>
+                                <button className="btn" onClick={() => setShowEditModal(false)}>Cancel</button>
                             </div>
                         </div>
                     </div>

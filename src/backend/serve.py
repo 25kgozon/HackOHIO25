@@ -169,24 +169,23 @@ def delete_assignment():
 def update_assignment():
     user = session.get('user')
     if not user:
-        return jsonify({"logged_in": False}, 401)
+        return jsonify({"logged_in": False}), 401
     if user["role"] != "teacher":
-        return jsonify({"error": "Not a teacher"}, 401)
-    
-    
+        return jsonify({"error": "Not a teacher"}), 401
 
     data = request.get_json()
+
     db.edit_assignment(
-        data["assignment id"].
-        data.get("name"), # Can be null for the rest of these!!!!
+        data["assignment id"],      # <-- no dot here
+        data.get("name"),           # Can be None
         data.get("desc"),
         data.get("attrs"),
         data.get("gradeInfo"),
         data.get("context")
     )
 
-
     return jsonify(":>")
+
 
 
 

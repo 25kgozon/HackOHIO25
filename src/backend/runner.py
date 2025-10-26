@@ -1,4 +1,9 @@
-# runner.py
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
+
+
 from db import *
 from concurrent.futures import ThreadPoolExecutor, Future
 import traceback

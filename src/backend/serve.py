@@ -263,7 +263,9 @@ def create_student_file():
 @app.route("/api/upload/<path:path>", methods=["POST"])
 def upload_to_s3(path):
     if "file" not in request.files:
-        return {"error": "No file part"}, 400
+        return jsonify({"error": "No file part"})
+    if db.get_file(path) is None:
+        return jsonify({"error": "No such file exists"})
 
     file = request.files["file"]
     if file.filename == "":
@@ -271,12 +273,10 @@ def upload_to_s3(path):
 
     # Generate a unique filename with the same extension (if any)
 
-    key = f"{uuid4()}"
-
     s3.upload_fileobj(
         file,
         BUCKET,
-        key,
+        path
     )
 
     return jsonify({"message": "Upload successful", "url": generate_download_url(key)})

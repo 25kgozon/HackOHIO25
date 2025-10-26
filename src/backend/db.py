@@ -293,6 +293,34 @@ class DB:
             )
             (fid,) = cur.fetchone()
             return str(fid)
+    def get_user_classes(self, openid: str) -> List[Dict[str, Any]]:
+        """
+        Return all class metadata (id, name, description, owner)
+        for classes associated with the given user.
+        """
+        with self._conn_cur() as (_, cur):
+            cur.execute(
+                """
+                SELECT c.id, c.name, c.description, c.owner
+                FROM users u
+                JOIN LATERAL unnest(u.classes) AS class_id ON TRUE
+                JOIN classes c ON c.id = class_id
+                WHERE u.openid = %s
+                """,
+                (openid,),
+            )
+            rows = cur.fetchall()
+            out: List[Dict[str, Any]] = []
+            for r in rows:
+                out.append(
+                    {
+                        "id": str(r[0]),
+                        "name": r[1],
+                        "description": r[2],
+                        "owner": r[3],
+                    }
+                )
+            return out
 
 
     def get_file(self, file_id: str) -> Optional[Dict[str, Any]]:

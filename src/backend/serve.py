@@ -100,7 +100,7 @@ def get_classes():
     user = session.get('user')
     if not user:
         return jsonify({"logged_in": False}, 401)
-    return jsonify(db.get_user(user["sub"])["classes"])
+    return jsonify(db.get_user_classes(user["sub"]))
 
 @app.route("/api/create_class", methods=["POST"])
 def create_class():

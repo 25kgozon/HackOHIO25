@@ -202,7 +202,7 @@ const CourseInfoPage = () => {
                 {/* Assignments */}
                 {["upcoming", "graded"].map((type) => (
                     <section key={type} className="assignments-section">
-                        <h3>{type === "upcoming" ? "Upcoming Assignments" : "Graded Assignments"}</h3>
+                        <h3>{type === "upcoming" ? "Upcoming Assignments" : ""}</h3>
                         <div className="assignment-cards">
                             {assignments[type].map((a) => (
                                 <div key={a.id} className={`assignment-card ${type}`}>

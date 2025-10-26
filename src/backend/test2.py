@@ -15,5 +15,5 @@ import requests
 db: DB = DB()
 
 
-#db.create_assignment(UUID("4bc332b9-bbea-4e53-a0e7-89bd2084eb0b"), "foo ass", "desc", {}, "")
-print(db.get_class_assignments(UUID("4bc332b9-bbea-4e53-a0e7-89bd2084eb0b")))
+print(db.create_assignment(UUID("3829cf32-2a91-4eeb-a7f7-68a622d485f7"), "foo ass", "desc", {}, {}, ""))
+print(db.get_class_assignments(UUID("3829cf32-2a91-4eeb-a7f7-68a622d485f7")))

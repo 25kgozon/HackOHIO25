@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 # Load environment variables from .env
 load_dotenv()
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import os
 from flask import Flask, make_response, redirect, session, jsonify, request
@@ -210,7 +210,56 @@ def aws_test():
 
 
 
+"""
+document.querySelector('input').onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
+  console.log('Uploading:', file.name);
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      console.error('Upload failed:', result);
+    } else {
+      console.log('Upload successful:', result);
+    }
+  } catch (err) {
+    console.error('Error uploading file:', err);
+  }
+};
+"""
+
+
+
+@app.route("/api/upload", methods=["POST"])
+def upload_to_s3():
+    if "file" not in request.files:
+        return {"error": "No file part"}, 400
+
+    file = request.files["file"]
+    if file.filename == "":
+        return {"error": "No selected file"}, 400
+
+    # Generate a unique filename with the same extension (if any)
+
+    key = f"{uuid4()}"
+
+    s3.upload_fileobj(
+        file,
+        BUCKET,
+        key,
+    )
+
+    return jsonify({"message": "Upload successful", "url": generate_download_url(key)})
 
 
 

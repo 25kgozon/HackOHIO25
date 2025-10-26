@@ -306,6 +306,42 @@ class DB:
                     "response": row[2],
                 }
             return None
+    def get_user_results_for_assignment(
+        self, openid: str, assignment_id: UUID
+        ) -> List[Dict[str, Any]]:
+        """
+        Return all results for a user on a specific assignment.
+        Joins user_results -> files by student_copy to filter by user and assignment.
+        """
+        with self._conn_cur() as (_, cur):
+            cur.execute(
+                """
+                SELECT
+                    ur.student_copy,
+                    ur.result,
+                    f.file_name
+                FROM user_results ur
+                JOIN files f
+                  ON f.id = ur.student_copy
+                WHERE f.posted_user = %s
+                  AND f.file_assignment = %s
+                  AND f.file_role = %s
+                ORDER BY ur.id
+                """,
+                (openid, assignment_id, FileRole.STUDENT_COPY.value),
+            )
+            rows = cur.fetchall()
+
+            out: List[Dict[str, Any]] = []
+            for r in rows:
+                out.append(
+                    {
+                        "student_copy": str(r[0]),
+                        "result": self._maybe_json_load(r[1]),
+                        "file_name": r[2],
+                    }
+                )
+            return out
 
 
 

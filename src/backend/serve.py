@@ -339,7 +339,17 @@ def get_sub(path):
         return jsonify({"logged_in": False}), 401
 
 
-    return db.get_file_by_user_on_assignment(user["sub"], UUID(path))
+    return jsonify(db.get_file_by_user_on_assignment(user["sub"], UUID(path)))
+
+@app.route("/api/score/<path:path>")
+def get_results_for_assignment(path):
+    user = session.get('user')
+    if not user:
+        return jsonify({"logged_in": False}), 401
+
+
+    return db.get_user_results_for_assignment(user["sub"], UUID(path))
+
 
 
 

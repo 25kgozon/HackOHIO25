@@ -81,7 +81,7 @@ def run_text_event(db: DB, id: int, task_type: int, prompt_info: dict, texts: li
     #  Cache the result and mark complete
     db.complete_text_task(id)
 
-    db.add_user_result(files[1], result)
+    db.add_user_result(files[0], result)
 
 
 def main():

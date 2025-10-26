@@ -1,100 +1,88 @@
 from dotenv import load_dotenv
-
 import os
-load_dotenv()
-
-
-
-
-
+import requests
 from db import *
 from s3 import *
 
-import requests
+# Load environment variables
+load_dotenv()
 
-db: DB = DB()
+db = DB()
 
 
-def sim_aws_upload(path : str, fid: str):
+def sim_aws_upload(path: str, fid: str):
+    """
+    Uploads a local file to S3 using a presigned URL.
+    """
     url = generate_upload_url(fid)
-    requests.put(url, data=open(path, "rb"))
+    with open(path, "rb") as f:
+        requests.put(url, data=f)
+    print(f"✅ Uploaded {path} to S3 with file id {fid}")
 
 
-
-def sim_student_upload(user : str, path : str):
-    fid = db.create_file(user, os.path.basename(path), FileRole.STUDENT_RESPONSE, "{}")
-    print("Generated fid:", fid)
-
-    sim_aws_upload(path, fid)
-
-
-    print(generate_download_url(fid))
-
-def sim_teacher_upload(user : str, path : str):
+def sim_teacher_upload(user: str, path: str):
+    """
+    Simulates a teacher uploading a PDF to the system.
+    """
     fid = db.create_file(user, os.path.basename(path), FileRole.TEACHER_KEY, "{}")
-    print("Generated fid:", fid)
-
     sim_aws_upload(path, fid)
+    print("Teacher file ID:", fid)
+    print("Download URL:", generate_download_url(fid))
+    return fid
 
 
-    print(generate_download_url(fid))
+def sim_student_upload(user: str, path: str):
+    """
+    Simulates a student uploading a PDF to the system.
+    """
+    fid = db.create_file(user, os.path.basename(path), FileRole.STUDENT_RESPONSE, "{}")
+    sim_aws_upload(path, fid)
+    print("Student file ID:", fid)
+    print("Download URL:", generate_download_url(fid))
+    return fid
 
 
-
-
-def sim_event_ocr(fid : str):
+def sim_ocr_task(fid: str):
+    """
+    Enqueue an OCR task so runner.py can process it into text.
+    """
     db.enqueue_file_task(TaskType.OCR, [fid], "{}")
+    print(f"📤 Enqueued OCR task for {fid}")
 
 
+def sim_grading_task(student_fid: str, teacher_fid: str):
+    """
+    After OCR finishes, enqueue a text grading task.
+    """
+    db.enqueue_text_task(TaskType.SUMMARIZE, [student_fid, teacher_fid], "{}")
+    print(f"📤 Enqueued grading task with student {student_fid} and teacher {teacher_fid}")
 
 
+# ======== TEST PIPELINE ========
 
-# student: 242f668d-8556-40b7-a0a6-7bb7a4bbc053 
-#teacher: 
+if __name__ == "__main__":
+    # Replace with your actual paths
+    teacher_pdf = "/Users/kgozon/Documents/midterm1_solution.pdf"
+    student_pdf = "/Users/kgozon/Documents/midterm1_submission.pdf"
 
+    user = "admin"
 
+    # STEP 1: Upload both teacher and student files
+    teacher_fid = sim_teacher_upload(user, teacher_pdf)
+    student_fid = sim_student_upload(user, student_pdf)
 
-# sim_student_upload("admin", "/home/mitch/Documents/hack/HackOHIO25/src/backend/uploads/midterm 1 - calc iii.pdf")
-# sim_teacher_upload("admin", "/home/mitch/Documents/hack/HackOHIO25/src/backend/uploads/midterm1_solution.pdf")
+    # STEP 2: Queue OCR events for both
+    sim_ocr_task(teacher_fid)
+    sim_ocr_task(student_fid)
 
-# sim_event_ocr("242f668d-8556-40b7-a0a6-7bb7a4bbc053")
-file_cache = (db.get_file_cache("242f668d-8556-40b7-a0a6-7bb7a4bbc053"))
+    print("\n✅ OCR tasks queued. Now run:")
+    print("   python runner.py")
+    print("to process both files and cache their text.\n")
 
-
-# print(generate_download_url("9f16967b-f48e-4e44-a682-fbf32fc5f6c7"))
-
-
-# Get the file info
-file_id = "242f668d-8556-40b7-a0a6-7bb7a4bbc053"
-file_info = db.get_file(file_id)
-
-if file_info and file_info["posted_user"]:
-    # Get the actual user who posted the file
-    openid = file_info["posted_user"]
-
-    # Get all classes for this user
-    user_classes = db.get_user_classes(openid)
-
-    if user_classes:
-        # Grab the first class (or you could loop through all)
-        class_name = user_classes[0]["name"]
-
-        # Print the class name
-        print("Class Name:", class_name)
-
-        # Enqueue the summarization task using the class name dynamically
-        file_cache = db.get_file_cache(file_id)
-        db.enqueue_text_task(TaskType.SUMMARIZE, [file_cache], {"subject": class_name})
-    else:
-        print("No classes found for this user.")
-else:
-    print("File not found or no user associated with file.")
-
-
-file_id = "242f668d-8556-40b7-a0a6-7bb7a4bbc053"
-file_info = db.get_file(file_id)
-print(file_info)
-print(openid)
+    # STEP 3: Once OCR tasks complete (you’ll see in runner output),
+    # enqueue the grading task:
+    print("After OCR finishes, run this command:")
+    print(f"   db.enqueue_text_task(TaskType.SUMMARIZE, ['{student_fid}', '{teacher_fid}'], '{{}}')")
 
 
 

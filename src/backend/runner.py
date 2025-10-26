@@ -1,17 +1,10 @@
 from dotenv import load_dotenv
-
-# Load environment variables from .env
 load_dotenv()
 
-
 from db import *
-from concurrent.futures import ThreadPoolExecutor, Future
+from concurrent.futures import ThreadPoolExecutor
 import traceback
 import time
-import os
-import tempfile
-import s3
-
 
 try:
     from grader import AIGrader
@@ -21,56 +14,80 @@ except ImportError:
 WORKERS = 1
 
 
-
-def run_file_event(db : DB, id : int, task_type : int, prompt_info : dict, files : list[str]):
-    initial = str(files[0])
-
-     
+def run_file_event(db: DB, id: int, task_type: int, prompt_info: dict, files: list[str]):
+    """
+    Handles file-based events.
+    This version no longer reads from the filesystem or S3.
+    It loads text directly from the database cache.
+    """
+    print(f"Processing file event {id} with files: {files}")
     grader = AIGrader()
 
+    # Each file in the event is referenced by its key
+    initial = str(files[0])
     fileInfo = db.get_file(initial)
+
+    # Determine whether this file is a teacher key or student submission
     is_teacher = fileInfo["file_role"] == FileRole.TEACHER_KEY.value
     is_student = fileInfo["file_role"] == FileRole.STUDENT_RESPONSE.value
-    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-        tmp = tmp.name
 
-        # Might throw botocore.exceptions.ClientError
-        s3.download_by_key(initial, tmp)
-        if is_teacher:
-            out = grader.read_teacher_files(tmp)
-        elif is_student:
-            out = grader.read_student_file(tmp)
+    # ✅ Get preloaded text from cache instead of reading a file
+    cached_text = db.get_file_cache(initial)
 
-        db.complete_file_task(id)
-        db.set_file_cache(initial, out)
+    if cached_text is None:
+        print(f"⚠️ No cached text found for {initial}")
+        return
+
+    # Pass raw text directly into the grader
+    if is_teacher:
+        out = grader.read_teacher_text(cached_text)
+    elif is_student:
+        out = grader.read_student_text(cached_text)
+    else:
+        raise ValueError(f"Unknown file role for {initial}")
+
+    # ✅ Update database state
+    db.complete_file_task(id)
+    db.set_file_cache(initial, out)
+
+    print(f"✅ Completed file task {id} ({'teacher' if is_teacher else 'student'})")
 
 
-def run_text_event(db: DB, id: int, task_type: int, prompt_info: dict, texts: list[str], files: list[UUID]):
+def run_text_event(db: DB, id: int, task_type: int, prompt_info: dict, texts: list[str], files: list[str]):
     """
-    Process text tasks, similar to file tasks.
+    Handles text-based events.
+    Combines preloaded teacher + student text and runs grading.
     """
+    print(f"Processing text event {id} using files: {files}")
     grader = AIGrader()
 
+    # Load all cached file texts
+    files_text = [db.get_file_cache(str(f)) for f in files]
 
-    files_text : list[str] = list(map(lambda f: db.get_file_cache(str(f)), files) )
+    # Basic structure: [student, teacher, context...]
+    student_text = files_text[0] if len(files_text) > 0 else None
+    teacher_text = files_text[1] if len(files_text) > 1 else None
+    context_files_text = files_text[2:] if len(files_text) > 2 else []
 
-    student_key_text = files_text[0]
-    teacher_key_text = files_text[1] if len(files_text) > 1 else None
-    context_files_text = files_text[2:] if len(files_text) > 2 else None
+    if not student_text or not teacher_text:
+        print(f"⚠️ Missing student or teacher text for text event {id}")
+        return
 
-    print(files_text)
+    # Run the grading logic
+    result = grader.grade(student_text, teacher_text, context_files_text)
 
-    # db.complete_text_task(id)
+    # ✅ Cache the result and mark complete
+    db.complete_text_task(id)
+    db.set_file_cache(id, result)
 
-
+    print(f"✅ Completed text task {id}")
 
 
 def main():
-    db: DB = DB()
+    db = DB()
     print("Starting event runner")
 
     with ThreadPoolExecutor(max_workers=WORKERS) as exec:
-        # 1. Dequeue a file task
         file_event = db.dequeue_file_task()
         text_event = db.dequeue_text_task()
 
@@ -86,16 +103,12 @@ def main():
         else:
             print("No text tasks in queue")
 
-        # Wait for all futures to finish
+        # Wait for all tasks to finish
         for fut in futures:
             while fut.running():
                 time.sleep(1)
             if fut.exception():
                 traceback.print_exception(fut.exception())
-
-
-
-
 
 
 if __name__ == "__main__":

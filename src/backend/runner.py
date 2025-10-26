@@ -97,13 +97,9 @@ def main():
 
             if file_event is not None:
                 futures.append(exec.submit(run_file_event, db, **file_event))
-            else:
-                print("No file tasks in queue")
 
             if text_event is not None:
                 futures.append(exec.submit(run_text_event, db, **text_event))
-            else:
-                print("No text tasks in queue")
 
             # Wait for all tasks to finish
             for fut in futures:

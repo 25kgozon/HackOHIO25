@@ -32,11 +32,6 @@ def run_file_event(db: DB, id: int, task_type: int, prompt_info: dict, files: li
     is_student = fileInfo["file_role"] == FileRole.STUDENT_RESPONSE.value
 
     #  Get preloaded text from cache instead of reading a file
-    cached_text = db.get_file_cache(initial)
-
-    if cached_text is None:
-        print(f" No cached text found for {initial}")
-        return
 
     # Pass raw text directly into the grader
     if is_teacher:

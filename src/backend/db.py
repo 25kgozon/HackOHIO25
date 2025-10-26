@@ -301,48 +301,30 @@ class DB:
             )
             row = cur.fetchone()
             if row:
+                print(row)
                 return {
-                    "student_copy": row[1],
-                    "response": row[2],
+                    "student_copy": row[0],
+                    "response": row[1],
                 }
             return None
+
     def get_user_results_for_assignment(
-        self, openid: str, assignment_id: UUID
-        ) -> List[Dict[str, Any]]:
+        self, user_openid: str, assignment_id: UUID
+    ) -> List[Dict[str, Any]]:
         """
-        Return all results for a user on a specific assignment.
-        Joins user_results -> files by student_copy to filter by user and assignment.
+        Return all results for a given user on a specific assignment.
+        Joins user_results -> files (student_copy file).
         """
-        with self._conn_cur() as (_, cur):
-            cur.execute(
-                """
-                SELECT
-                    ur.student_copy,
-                    ur.result,
-                    f.file_name
-                FROM user_results ur
-                JOIN files f
-                  ON f.id = ur.student_copy
-                WHERE f.posted_user = %s
-                  AND f.file_assignment = %s
-                  AND f.file_role = %s
-                ORDER BY ur.id
-                """,
-                (openid, assignment_id, FileRole.STUDENT_COPY.value),
-            )
-            rows = cur.fetchall()
+        subs = self.get_file_by_user_on_assignment(user_openid, assignment_id)
 
-            out: List[Dict[str, Any]] = []
-            for r in rows:
-                out.append(
-                    {
-                        "student_copy": str(r[0]),
-                        "result": self._maybe_json_load(r[1]),
-                        "file_name": r[2],
-                    }
-                )
-            return out
 
+        ret = []
+        for s in subs:
+            if s["file_role"] == FileRole.STUDENT_RESPONSE.value:
+                copy = self.get_result_by_student_copy(s["id"])
+                if copy is not None:
+                    ret.append(copy)
+        return ret
 
 
 

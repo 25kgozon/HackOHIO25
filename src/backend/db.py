@@ -69,6 +69,9 @@ CREATE TABLE IF NOT EXISTS assignments (
     name TEXT,
     description TEXT,
     attrs TEXT, -- JSON dict TODO
+    gradeInfo TEXT, -- JSON dict
+
+
     context TEXT,
     files UUID[]
 );
@@ -642,18 +645,19 @@ class DB:
 
 
     def create_assignment(
-        self, class_id: UUID, name: str, description: str, attrs: dict, context: str
+        self, class_id: UUID, name: str, description: str, attrs: dict, gradeInfo : dict, context: str
     ):
         attrs_txt = self._maybe_json_dump(attrs)
+        grade_txt = self._maybe_json_dump(gradeInfo)
 
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
-                INSERT INTO assignments (name, description, attrs, context, files)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO assignments (name, description, attrs, gradeInfo, context, files)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 RETURNING id
                 """,
-                (name, description, attrs_txt, context, []),
+                (name, description, attrs_txt, grade_txt, context, []),
             )
             (ass_id,) = cur.fetchone()
 
@@ -673,7 +677,7 @@ class DB:
         with self._conn_cur() as (_, cur):
             cur.execute(
                 """
-                SELECT a.id, a.name, a.description, a.attrs
+                SELECT a.id, a.name, a.description, a.attrs, a.gradeInfo
                 FROM classes c
                 JOIN LATERAL unnest(c.assignments) AS ass_id ON TRUE
                 JOIN assignments a ON a.id = ass_id
@@ -689,10 +693,79 @@ class DB:
                         "id": str(r[0]),
                         "name": r[1],
                         "description": r[2],
-                        "attrs": self._maybe_json_load(r[3])
+                        "attrs": self._maybe_json_load(r[3]),
+                        "grade info": self._maybe_json_load(r[4])
                     }
                 )
             return out
+    def delete_assignment(self, class_id: UUID, assignment_id: UUID):
+        """
+        Delete a specific assignment and remove its reference from the class.
+        """
+        with self._conn_cur() as (_, cur):
+            # Remove the assignment reference from the class
+            cur.execute(
+                """
+                UPDATE classes
+                SET assignments = array_remove(assignments, %s)
+                WHERE id = %s
+                """,
+                (assignment_id, class_id),
+            )
+
+            # Delete the actual assignment
+            cur.execute(
+                """
+                DELETE FROM assignments
+                WHERE id = %s
+                """,
+                (assignment_id,),
+            )
+
+    def edit_assignment(
+        self,
+        assignment_id: UUID,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        attrs: Optional[dict] = None,
+        gradeInfo: Optional[dict] = None,
+        context: Optional[str] = None,
+    ):
+        """
+        Edit an assignment's editable fields.
+        Only provided fields will be updated.
+        """
+        updates = []
+        params = []
+
+        if name is not None:
+            updates.append("name = %s")
+            params.append(name)
+        if description is not None:
+            updates.append("description = %s")
+            params.append(description)
+        if attrs is not None:
+            updates.append("attrs = %s")
+            params.append(self._maybe_json_dump(attrs))
+        if gradeInfo is not None:
+            updates.append("gradeInfo = %s")
+            params.append(self._maybe_json_dump(gradeInfo))
+        if context is not None:
+            updates.append("context = %s")
+            params.append(context)
+
+        if not updates:
+            return  # Nothing to update
+
+        query = f"""
+            UPDATE assignments
+            SET {', '.join(updates)}
+            WHERE id = %s
+        """
+        params.append(assignment_id)
+
+        with self._conn_cur() as (_, cur):
+            cur.execute(query, tuple(params))
 
     def complete_text_task(self, task_id: int) -> bool:
         with self._conn_cur() as (_, cur):

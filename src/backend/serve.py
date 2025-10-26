@@ -1,3 +1,4 @@
+from boto3.docs import method
 from dotenv import load_dotenv
 
 # Load environment variables from .env
@@ -148,9 +149,46 @@ def create_assignment():
         data["ass name"],
         data["ass desc"],
         data["ass attrs"], # Dict, leave blank for now
+        data["ass grade info"], # Put in a dict
         data["context"]
     )
     return jsonify({"id": id})
+@app.route("/api/delete_assignment", methods=["POST"])
+def delete_assignment():
+    user = session.get('user')
+    if not user:
+        return jsonify({"logged_in": False}, 401)
+    if user["role"] != "teacher":
+        return jsonify({"error": "Not a teacher"}, 401)
+
+    data = request.get_json()
+    db.delete_assignment(data["class id"], data["assignment id"])
+    return jsonify(":>")
+
+@app.route("/api/update_assignment", methods=["POST"])
+def update_assignment():
+    user = session.get('user')
+    if not user:
+        return jsonify({"logged_in": False}, 401)
+    if user["role"] != "teacher":
+        return jsonify({"error": "Not a teacher"}, 401)
+    
+    
+
+    data = request.get_json()
+    db.edit_assignment(
+        data["assignment id"].
+        data.get("name"), # Can be null for the rest of these!!!!
+        data.get("desc"),
+        data.get("attrs"),
+        data.get("gradeInfo"),
+        data.get("context")
+    )
+
+
+    return jsonify(":>")
+
+
 
 @app.route("/api/get_class_assignments", methods=["POST"])
 def get_ass():

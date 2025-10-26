@@ -31,11 +31,11 @@ def run_file_event(db: DB, id: int, task_type: int, prompt_info: dict, files: li
     is_teacher = fileInfo["file_role"] == FileRole.TEACHER_KEY.value
     is_student = fileInfo["file_role"] == FileRole.STUDENT_RESPONSE.value
 
-    # ✅ Get preloaded text from cache instead of reading a file
+    #  Get preloaded text from cache instead of reading a file
     cached_text = db.get_file_cache(initial)
 
     if cached_text is None:
-        print(f"⚠️ No cached text found for {initial}")
+        print(f" No cached text found for {initial}")
         return
 
     # Pass raw text directly into the grader
@@ -46,11 +46,11 @@ def run_file_event(db: DB, id: int, task_type: int, prompt_info: dict, files: li
     else:
         raise ValueError(f"Unknown file role for {initial}")
 
-    # ✅ Update database state
+    #  Update database state
     db.complete_file_task(id)
     db.set_file_cache(initial, out)
 
-    print(f"✅ Completed file task {id} ({'teacher' if is_teacher else 'student'})")
+    print(f" Completed file task {id} ({'teacher' if is_teacher else 'student'})")
 
 
 def run_text_event(db: DB, id: int, task_type: int, prompt_info: dict, texts: list[str], files: list[str]):
@@ -70,17 +70,17 @@ def run_text_event(db: DB, id: int, task_type: int, prompt_info: dict, texts: li
     context_files_text = files_text[2:] if len(files_text) > 2 else []
 
     if not student_text or not teacher_text:
-        print(f"⚠️ Missing student or teacher text for text event {id}")
+        print(f" Missing student or teacher text for text event {id}")
         return
 
     # Run the grading logic
     result = grader.grade(student_text, teacher_text, context_files_text)
 
-    # ✅ Cache the result and mark complete
+    #  Cache the result and mark complete
     db.complete_text_task(id)
     db.set_file_cache(id, result)
 
-    print(f"✅ Completed text task {id}")
+    print(f" Completed text task {id}")
 
 
 def main():

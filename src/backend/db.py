@@ -1,4 +1,5 @@
 import os
+from uuid import UUID
 import enum
 import json
 from typing import Any, Dict, List, Optional, Tuple
@@ -255,6 +256,19 @@ class DB:
                 """,
                 (classes, openid),
             )
+    def delete_classes(
+        self,
+        classid:UUID
+    ) -> None:
+        with self._conn_cur() as (_, cur):
+            cur.execute(
+                """
+                DELETE FROME classes WHERE id=%s
+                """,
+                (classid),
+            )
+
+
 
     # -----------------------
     # Files

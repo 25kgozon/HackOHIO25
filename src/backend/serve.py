@@ -117,7 +117,21 @@ def create_class():
     classes.append(id)
     db.update_user_classes(user["sub"], classes)
     
+    return jsonify({"id": id})
+
+
+@app.route("/api/delete_class", methods=["POST"])
+def delete_class():
+    user = session.get('user')
+    if not user:
+        return jsonify({"logged_in": False}, 401)
+    if user["role"] != "teacher":
+        return jsonify({"error": "Not a teacher"}, 401)
+
+    data = request.get_json()
+    db.delete_classes(UUID(data["id"]))
     return jsonify(":>")
+
 
 
 
